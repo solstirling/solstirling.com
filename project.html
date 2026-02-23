@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project | Sol Stirling Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="projects-data.js"></script>
+  <script src="supabase-config.js"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen">
+  <section class="container mx-auto px-4 py-8 max-w-3xl">
+    <div class="mb-6 flex flex-wrap gap-2">
+      <button id="back-btn" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors">Back</button>
+      <a href="index.html" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-500 transition-colors">Live Home</a>
+      <a href="preview.html" class="px-4 py-2 bg-sky-700 text-white rounded hover:bg-sky-600 transition-colors">Draft Preview</a>
+      <a href="dashboard.html" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">Dashboard</a>
+    </div>
+    <div id="content" class="bg-gray-900 border border-gray-800 rounded-xl p-6"></div>
+  </section>
+
+  <script>
+    const content = document.getElementById('content');
+    const backBtn = document.getElementById('back-btn');
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function backTargetFromSource(source) {
+      if (source === 'draft' || source === 'dashboard-draft') return 'preview.html';
+      if (source === 'dashboard' || source === 'dashboard-published') return 'dashboard.html';
+      return 'index.html';
+    }
+
+    function setupBackButton() {
+      const params = new URLSearchParams(window.location.search);
+      const source = params.get('from') || 'live';
+      const fallback = backTargetFromSource(source);
+      backBtn.addEventListener('click', () => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = fallback;
+        }
+      });
+    }
+
+    function renderProject(project) {
+      const media = !project.mediaSrc
+        ? ''
+        : project.mediaType === 'video'
+          ? `<video src="${escapeHtml(project.mediaSrc)}" ${project.mediaPoster ? `poster="${escapeHtml(project.mediaPoster)}"` : ''} class="mb-5 rounded w-full bg-black" controls playsinline preload="metadata"></video>`
+          : `<img src="${escapeHtml(project.mediaSrc)}" alt="${escapeHtml(project.mediaAlt || project.title)}" class="mb-5 rounded w-full">`;
+
+      const external = project.link && !project.link.includes('project.html?project=')
+        ? `<a href="${escapeHtml(project.link)}" class="inline-block mb-4 text-sky-300 hover:text-sky-200">Original Link</a>`
+        : '';
+
+      content.innerHTML = `
+        <h1 class="text-4xl font-bold mb-3 text-white">${escapeHtml(project.title)}</h1>
+        <div class="inline-block px-3 py-1 text-sm font-medium text-white bg-gray-700 rounded-full mb-4">${escapeHtml(project.status)}</div>
+        ${external}
+        ${media}
+        <p class="text-gray-300 leading-relaxed">${escapeHtml(project.description)}</p>
+      `;
+      document.title = `${project.title} | Sol Stirling Portfolio`;
+    }
+
+    function renderError(message) {
+      content.innerHTML = `<p class="text-red-300">${escapeHtml(message)}</p>`;
+    }
+
+    function mapRowToProject(row, index) {
+      return window.PortfolioProjects.sanitizeProject(
+        {
+          id: row.project_key,
+          title: row.title,
+          status: row.status,
+          statusColor: row.status_color,
+          description: row.description,
+          link: row.link,
+          mediaType: row.media_type,
+          mediaSrc: row.media_src,
+          mediaAlt: row.media_alt,
+          mediaPoster: row.media_poster,
+          sortOrder: row.sort_order
+        },
+        index
+      );
+    }
+
+    async function init() {
+      setupBackButton();
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('project');
+      if (!slug) {
+        renderError('Missing project slug.');
+        return;
+      }
+
+      const cfg = window.SUPABASE_CONFIG || {};
+      if (!cfg.url || !cfg.anonKey) {
+        renderError('Supabase config is missing.');
+        return;
+      }
+
+      const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+      const { data, error } = await client
+        .from('portfolio_published')
+        .select('project_key,title,description,link,status,status_color,media_type,media_src,media_alt,media_poster,sort_order')
+        .eq('site_slug', cfg.siteSlug || 'solstirling.com')
+        .eq('project_key', slug)
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !data) {
+        renderError('Project not found.');
+        return;
+      }
+
+      renderProject(mapRowToProject(data, 0));
+    }
+
+    init();
+  </script>
+</body>
+</html>

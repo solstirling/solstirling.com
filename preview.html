@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sol Stirling Portfolio</title>
+  <title>Draft Preview | Sol Stirling Portfolio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="projects-data.js"></script>
@@ -11,6 +11,18 @@
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen">
   <section class="container mx-auto px-4 py-8">
+    <div id="auth-warning" class="hidden mb-6 rounded-lg border border-red-700 bg-red-900/30 p-4">
+      <p class="text-red-300 font-semibold">Sign-in required</p>
+      <p class="text-red-200 text-sm">Please open dashboard and sign in first to view draft preview.</p>
+      <a href="dashboard.html" class="inline-block mt-3 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded transition-colors">Go to Dashboard</a>
+    </div>
+
+    <div class="mb-6 rounded-lg border border-yellow-700 bg-yellow-900/30 p-4">
+      <p class="text-yellow-300 font-semibold">Draft Preview</p>
+      <p class="text-yellow-200 text-sm">This page shows draft projects from Supabase. Live site only shows published projects.</p>
+      <a href="dashboard.html" class="inline-block mt-3 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded transition-colors">Back to Dashboard</a>
+    </div>
+
     <div class="flex justify-center mb-4">
       <img src="images/logo.png" alt="Sol Stirling Logo" class="h-20 rounded-md">
     </div>
@@ -24,18 +36,20 @@
         <a href="https://discord.com/users/767132236410912828" target="_blank">
           <img src="images/discord.png" alt="Discord" class="h-8 hover:opacity-80 transition-opacity">
         </a>
-        <a href="https://www.instagram.com/thesol.stirling/" target="_blank"> 
+        <a href="https://www.instagram.com/thesolstirling/" target="_blank">
           <img src="images/IG.png" alt="Instagram" class="h-8 hover:opacity-80 transition-opacity">
         </a>
       </div>
     </div>
 
-    <p class="text-center text-gray-400 text-sm mb-8">A simple catalog of all of my personal and team engineering projects.</p>
+    <p class="text-center text-gray-400 text-sm mb-8">Preview of unpublished draft cards.</p>
     <div id="projects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </section>
 
   <script>
+    const SITE_SLUG = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.siteSlug) || 'solstirling.com';
     const projectsGrid = document.getElementById('projects-grid');
+    const authWarning = document.getElementById('auth-warning');
 
     function escapeHtml(value) {
       return String(value || '')
@@ -55,8 +69,12 @@
     }
 
     function projectLink(project) {
-      if (project.link && project.link !== '#') return project.link;
-      return `project.html?project=${encodeURIComponent(project.id)}&from=live`;
+      if (!project.link || project.link === '#') return `project.html?project=${encodeURIComponent(project.id)}&from=draft`;
+      if (project.link.startsWith('project.html?project=')) {
+        const base = project.link.split('&from=')[0];
+        return `${base}&from=draft`;
+      }
+      return project.link;
     }
 
     function renderMedia(project) {
@@ -74,8 +92,7 @@
     }
 
     function renderProjects(projects) {
-      const safeProjects = projects && projects.length ? projects : window.PortfolioProjects.defaultProjects;
-      projectsGrid.innerHTML = safeProjects
+      projectsGrid.innerHTML = projects
         .map((project) => `
           <a href="${escapeHtml(projectLink(project))}" class="block bg-gray-900 border border-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg hover:border-gray-700 transition-shadow transition-colors">
             ${renderMedia(project)}
@@ -87,50 +104,56 @@
         .join('');
     }
 
-    function mapRowToProject(row, index) {
-      return window.PortfolioProjects.sanitizeProject(
-        {
-          id: row.project_key,
-          title: row.title,
-          status: row.status,
-          statusColor: row.status_color,
-          description: row.description,
-          link: row.link,
-          mediaType: row.media_type,
-          mediaSrc: row.media_src,
-          mediaAlt: row.media_alt,
-          mediaPoster: row.media_poster,
-          sortOrder: row.sort_order
-        },
-        index
-      );
-    }
-
-    async function loadPublishedProjects() {
+    async function initPreview() {
       const cfg = window.SUPABASE_CONFIG || {};
       if (!cfg.url || !cfg.anonKey) {
-        renderProjects(window.PortfolioProjects.defaultProjects);
+        authWarning.classList.remove('hidden');
         return;
       }
 
       const client = window.supabase.createClient(cfg.url, cfg.anonKey);
-      const { data, error } = await client
-        .from('portfolio_published')
-        .select('project_key,title,description,link,status,status_color,media_type,media_src,media_alt,media_poster,sort_order')
-        .eq('site_slug', cfg.siteSlug || 'solstirling.com')
-        .order('sort_order', { ascending: true })
-        .order('published_at', { ascending: false });
-
-      if (error) {
-        console.error('Failed to load published projects', error);
-        renderProjects(window.PortfolioProjects.defaultProjects);
+      const { data: sessionData } = await client.auth.getSession();
+      const session = sessionData && sessionData.session;
+      if (!session) {
+        authWarning.classList.remove('hidden');
         return;
       }
 
-      renderProjects((data || []).map(mapRowToProject));
+      const { data, error } = await client
+        .from('portfolio_drafts')
+        .select('project_key,title,description,link,status,status_color,media_type,media_src,media_alt,media_poster,sort_order')
+        .eq('site_slug', SITE_SLUG)
+        .order('sort_order', { ascending: true })
+        .order('updated_at', { ascending: false });
+
+      if (error) {
+        authWarning.classList.remove('hidden');
+        return;
+      }
+
+      const projects = (data || []).map((row, idx) =>
+        window.PortfolioProjects.sanitizeProject(
+          {
+            id: row.project_key,
+            title: row.title,
+            description: row.description,
+            link: row.link,
+            status: row.status,
+            statusColor: row.status_color,
+            mediaType: row.media_type,
+            mediaSrc: row.media_src,
+            mediaAlt: row.media_alt,
+            mediaPoster: row.media_poster,
+            sortOrder: row.sort_order
+          },
+          idx
+        )
+      );
+
+      renderProjects(projects.length ? projects : window.PortfolioProjects.defaultProjects);
     }
 
-    loadPublishedProjects();
+    initPreview();
   </script>
 </body>
 </html>
