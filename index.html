@@ -6,14 +6,9 @@
   <title>Sol Stirling Portfolio</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen">
    <!-- Projects Section -->
-  <section class="container mx-auto px-4 py-8"><style>
-    body { background-color: #121212; color: #e0e0e0; }
-    .bg-white { background-color: #1e1e1e !important; }
-    .text-gray-600 { color: #c0c0c0 !important; }
-</style>
-
+  <section class="container mx-auto px-4 py-8">
     <!-- Logo -->
     <div class="flex justify-center mb-4">
       <img src="images/logo.png" alt="Sol Stirling Logo" class="h-20 rounded-md">
@@ -21,7 +16,7 @@
 
     <!-- Title and Socials -->
     <div class="text-center mb-4">
-      <h1 class="text-4xl font-bold">Sol Stirling Portfolio</h1>
+      <h1 class="text-4xl font-bold text-white">Sol Stirling Portfolio</h1>
       <div class="flex justify-center space-x-4 mt-4">
         <a href="https://www.linkedin.com/in/solstirling" target="_blank">
           <img src="images/linkedin.png" alt="LinkedIn" class="h-8 hover:opacity-80 transition-opacity">
@@ -36,36 +31,35 @@
     </div>
 
     <!-- Caption -->
-    <p class="text-center text-gray-600 text-sm mb-8">A simple catalog of all of my personal and team engineering projects.</p>
- gap-4
+    <p class="text-center text-gray-400 text-sm mb-8">A simple catalog of all of my personal and team engineering projects.</p>
+
     <!-- Projects Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Project Card 1 -->
-    <a href="robot2025.html" class="block bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+    <a href="robot2025.html" class="block bg-gray-900 border border-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg hover:border-gray-700 transition-shadow transition-colors">
         <img src="images/rmain.png" alt="2025 Robot" class="mb-4 rounded w-full h-auto max-h-40 object-contain">
-        <h2 class="text-xl font-semibold mb-2">2025 FRC Robot</h2>
+        <h2 class="text-xl font-semibold mb-2 text-white">2025 FRC Robot</h2>
         <span class="inline-block px-3 py-1 text-sm font-medium text-white bg-green-500 rounded-full mb-2">Completed</span>
-        <p class="text-gray-600">A brief writeup of the main mechanisms I designed on this robot. After winning it's first regional, this robot went on to win it's division at the world championship and placed 3rd on the world stage.</p>
+        <p class="text-gray-400">A brief writeup of the main mechanisms I designed on this robot. After winning it's first regional, this robot went on to win it's division at the world championship and placed 3rd on the world stage.</p>
       </a>
       <!-- Project Card 2 -->
-      <a href="diffy.html" class="block bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+      <a href="diffy.html" class="block bg-gray-900 border border-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg hover:border-gray-700 transition-shadow transition-colors">
         <img src="images/rdiffy.png" =alt="Project Three Preview" class="mb-4 rounded w-full h-auto max-h-40 object-contain">
-        <h2 class="text-xl font-semibold mb-2">Intro to Differential</h2>
+        <h2 class="text-xl font-semibold mb-2 text-white">Intro to Differential</h2>
         <span class="inline-block px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full mb-2">WIP</span>
-        <p class="text-gray-600">A project to familiarize myself with designing bevel gears and programming differentials. This is my first time ever programming stepper motors, and outsourcing parts from vendors.</p>
+        <p class="text-gray-400">A project to familiarize myself with designing bevel gears and programming differentials. This is my first time ever programming stepper motors, and outsourcing parts from vendors. </p>
       </a>
-       <a href="capstan.html" class="block bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+       <a href="capstan.html" class="block bg-gray-900 border border-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg hover:border-gray-700 transition-shadow transition-colors">
         <img src="images/capstanmain.png" =alt="Project Three Preview" class="mb-4 rounded w-full h-auto max-h-40 object-contain">
-        <h2 class="text-xl font-semibold mb-2">Capstan Pivot</h2>
+        <h2 class="text-xl font-semibold mb-2 text-white">Capstan Pivot</h2>
         <span class="inline-block px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full mb-2">WIP</span>
-        <p class="text-gray-600">All of the different iterations of my easy capstan pivot. I wanted to persue this type of power transmission to see if it was worth applying to FRC. I am currently working on V0 (prototype) of the capstan pivot.</p>
+        <p class="text-gray-400">All of the different iterations of my easy capstan pivot. I wanted to persue this type of power transmission to see if it was worth applying to FRC. I am currently working on V0 (prototype) of the capstan pivot.</p>
       </a>
       <!-- Add more project cards as needed -->
     </div>
   </section>
 </body>
 </html>
-
 
 
 

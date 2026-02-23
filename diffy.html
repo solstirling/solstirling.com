@@ -6,24 +6,25 @@
   <title>Introductory Differential Wrist</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen">
   <!-- Project Details Section -->
   <section class="container mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold mb-4">Introductory Differential Wrist</h1>
+    <h1 class="text-4xl font-bold mb-4 text-white">Introductory Differential Wrist</h1>
     <img src="images/rdiffy.png" alt="Diffy Robot" class="mb-4 rounded w-full max-w-md mx-auto">
-    <p class="text-gray-800 mb-4">
+    <p class="text-gray-400 mb-4">
       This is my first, extremely basic, differential project. Due to my limited resources, it is mostly 3D Printed, and I scrapped the bearings from an old pinball machine my brother made, but it works just fine. The main goal of this project was to learn to design with custom bevel gears, which turned out to be extremely easy using Onshape. Below I talk about the design, build, and programming of this project.
     </p>
-    <h1 class="text-4xl font-bold mb-4">The Design</h1>
+    <h1 class="text-4xl font-bold mb-4 text-white">The Design</h1>
     <img src="images/rdiffyparts.png" alt="Part Studio" class="mb-4 rounded w-full max-w-md mx-auto">
-    <p class="text-gray-800 mb-4">
-        I used two Nema 17 Stepper motors to power it, because I wanted to use <a href="https://github.com/joshr120/PD-Stepper" class="text-blue-500 hover:text-blue-700 transition-colors duration-200" target="_blank">PD Stepper</a> for control. The design process was pretty straight foward, I started with the bevel gears using the Gear Lab Featurescript that Onshape offers, and build the rest off of the bevel gear spacing. Because I didn't look at any other differentials for inspiration, the main axle is a little bit sketchy for retaining the top bevel gear, but its sturdy enough to mess around with. I initially wanted to use timing belts 3D printed out of TPU, but after a bunch of failed attempts on my Bambu A1 mini, I decided to just buy some from V-Belt guys. My brother gave me his pinball machine a while ago, so I took it apart and scrapped some metric bearings off of it. Thats about it, its a pretty simple build. One change I did make was to the main axle. Because it is all 3d printed, I decided to move away from a axle coupler to just 3d printing the central axle with the top bevel axle perpendicular to it to save part count. 
+    <p class="text-gray-400 mb-4">
+        I used two Nema 17 Stepper motors to power it, because I wanted to use <a href="https://github.com/joshr120/PD-Stepper" class="text-sky-400 hover:text-sky-300 transition-colors duration-200" target="_blank">PD Stepper</a> for control. The design process was pretty straight foward, I started with the bevel gears using the Gear Lab Featurescript that Onshape offers, and build the rest off of the bevel gear spacing. Because I didn't look at any other differentials for inspiration, the main axle is a little bit sketchy for retaining the top bevel gear, but its sturdy enough to mess around with. I initially wanted to use timing belts 3D printed out of TPU, but after a bunch of failed attempts on my Bambu A1 mini, I decided to just buy some from V-Belt guys. My brother gave me his pinball machine a while ago, so I took it apart and scrapped some metric bearings off of it. Thats about it, its a pretty simple build. One change I did make was to the main axle. Because it is all 3d printed, I decided to move away from a axle coupler to just 3d printing the central axle with the top bevel axle perpendicular to it to save part count. 
     </p>
-     <h1 class="text-4xl font-bold mb-4">The Build</h1>
+     <h1 class="text-4xl font-bold mb-4 text-white">The Build</h1>
     <img src="images/diffybuild.jpg" alt="Prints" class="mb-4 rounded w-full max-w-md mx-auto">
-    <p class="text-gray-800 mb-4">
+    <p class="text-gray-400 mb-4">
         The diffy was assembled with 3d printed plates, gears, and axles, as well as metric bearqings and bolts, and finally some HTD timing belts and stepper motors. The only issue I ran into during assembly was the tolerances on the 3d printed parts. I sent it with +- 0.2mm for the tolerances, and things were still way too tight. I had to jerryrig a clamp to act as an arbor press, and spent a decent amount of time sanding down the center axle to fit into the bearing bores, but in the end it all fit together great (and I didn't have to reprint the parts!).
     </p>
-    <a href="index.html" class="inline-block px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600">Home</a>
+    <a href="index.html" class="inline-block px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-500 transition-colors">Home</a>
+  </section>
 </body>
 </html>
