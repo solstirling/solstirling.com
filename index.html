@@ -10,6 +10,8 @@
   <script src="supabase-config.js"></script>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen">
+  <a href="dashboard.html" class="fixed top-4 left-4 z-50 px-3 py-2 text-sm font-medium bg-gray-800/95 border border-gray-700 rounded-md text-gray-100 hover:bg-gray-700 transition-colors">Dashboard</a>
+
   <section class="container mx-auto px-4 py-8">
     <div class="flex justify-center mb-4">
       <img src="images/logo.png" alt="Sol Stirling Logo" class="h-20 rounded-md">
@@ -24,7 +26,7 @@
         <a href="https://discord.com/users/767132236410912828" target="_blank">
           <img src="images/discord.png" alt="Discord" class="h-8 hover:opacity-80 transition-opacity">
         </a>
-        <a href="https://www.instagram.com/thesol.stirling/" target="_blank"> 
+        <a href="https://www.instagram.com/thesol.stirling/" target="_blank">
           <img src="images/IG.png" alt="Instagram" class="h-8 hover:opacity-80 transition-opacity">
         </a>
       </div>
@@ -36,6 +38,18 @@
 
   <script>
     const projectsGrid = document.getElementById('projects-grid');
+
+    const LEGACY_LINKS_BY_ID = {
+      robot2025: 'robot2025.html',
+      diffy: 'diffy.html',
+      capstan: 'capstan.html'
+    };
+
+    const LEGACY_LINKS_BY_TITLE = {
+      '2025 FRC Robot': 'robot2025.html',
+      'Intro to Differential': 'diffy.html',
+      'Capstan Pivot': 'capstan.html'
+    };
 
     function escapeHtml(value) {
       return String(value || '')
@@ -55,6 +69,12 @@
     }
 
     function projectLink(project) {
+      const legacyById = LEGACY_LINKS_BY_ID[project.id];
+      if (legacyById) return legacyById;
+
+      const legacyByTitle = LEGACY_LINKS_BY_TITLE[project.title];
+      if (legacyByTitle) return legacyByTitle;
+
       if (project.link && project.link !== '#') return project.link;
       return `project.html?project=${encodeURIComponent(project.id)}&from=live`;
     }
