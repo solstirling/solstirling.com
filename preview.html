@@ -123,6 +123,7 @@
         .from('portfolio_drafts')
         .select('project_key,title,description,link,status,status_color,media_type,media_src,media_alt,media_poster,sort_order')
         .eq('site_slug', SITE_SLUG)
+        .eq('owner_id', session.user.id)
         .order('sort_order', { ascending: true })
         .order('updated_at', { ascending: false });
 
@@ -150,7 +151,11 @@
         )
       );
 
-      renderProjects(projects.length ? projects : window.PortfolioProjects.defaultProjects);
+      if (projects.length) {
+        renderProjects(projects);
+      } else {
+        projectsGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">No draft projects yet.</p>';
+      }
     }
 
     initPreview();
