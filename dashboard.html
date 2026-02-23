@@ -210,6 +210,10 @@
       return 'bg-blue-600';
     }
 
+    function confirmDelete(scope, title) {
+      return window.confirm(`u sure? Delete ${scope} project "${title}"?`);
+    }
+
     function autoLink(projectId, source) {
       return `project.html?project=${encodeURIComponent(projectId)}&from=${encodeURIComponent(source || 'dashboard')}`;
     }
@@ -298,7 +302,11 @@
       draftList.querySelectorAll('.delete-draft-btn').forEach((btn) => {
         btn.addEventListener('click', async () => {
           hideError(dashError);
-          const id = btn.dataset.id;
+          const project = draftProjects.find((item) => item.id === btn.dataset.id);
+          if (!project) return;
+          if (!confirmDelete('draft', project.title)) return;
+
+          const id = project.id;
           const { error } = await client
             .from('portfolio_drafts')
             .delete()
@@ -312,6 +320,9 @@
           }
 
           await refreshLists();
+          if (fields.id.value === id) {
+            resetForm();
+          }
         });
       });
     }
@@ -335,6 +346,7 @@
               </div>
               <div class="flex flex-col gap-2">
                 <button class="edit-published-btn bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1 rounded" data-id="${p.id}">Edit</button>
+                <button class="delete-published-btn bg-red-700 hover:bg-red-600 text-xs px-3 py-1 rounded" data-id="${p.id}">Delete</button>
               </div>
             </div>
           </div>
@@ -346,6 +358,45 @@
           const p = publishedProjects.find((item) => item.id === btn.dataset.id);
           if (!p) return;
           fillFormFromProject(p, 'Edit Published Project (saved as draft)');
+        });
+      });
+
+      publishedList.querySelectorAll('.delete-published-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          hideError(dashError);
+          const project = publishedProjects.find((item) => item.id === btn.dataset.id);
+          if (!project) return;
+          if (!confirmDelete('published', project.title)) return;
+
+          const id = project.id;
+          const publishedDelete = await client
+            .from('portfolio_published')
+            .delete()
+            .eq('site_slug', SITE_SLUG)
+            .eq('owner_id', user.id)
+            .eq('project_key', id);
+
+          if (publishedDelete.error) {
+            showError(dashError, publishedDelete.error.message);
+            return;
+          }
+
+          const draftDelete = await client
+            .from('portfolio_drafts')
+            .delete()
+            .eq('site_slug', SITE_SLUG)
+            .eq('owner_id', user.id)
+            .eq('project_key', id);
+
+          if (draftDelete.error) {
+            showError(dashError, draftDelete.error.message);
+            return;
+          }
+
+          await refreshLists();
+          if (fields.id.value === id) {
+            resetForm();
+          }
         });
       });
     }
