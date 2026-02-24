@@ -33,6 +33,11 @@
         .replaceAll("'", '&#39;');
     }
 
+    function isMissingColumn(error, columnName) {
+      const msg = String(error && error.message ? error.message : '').toLowerCase();
+      return (error && error.code === '42703') || msg.includes(columnName.toLowerCase());
+    }
+
     function backTargetFromSource(source) {
       if (source === 'draft' || source === 'dashboard-draft') return 'preview.html';
       if (source === 'dashboard' || source === 'dashboard-published') return 'dashboard.html';
@@ -52,7 +57,50 @@
       });
     }
 
+    function renderContentBlocks(blocks) {
+      return blocks
+        .map((block) => {
+          if (block.type === 'text') {
+            const text = escapeHtml(block.text || '').replaceAll('\n', '<br>');
+            return `<p class="text-gray-300 leading-relaxed">${text}</p>`;
+          }
+
+          const url = escapeHtml(block.url || '');
+          const caption = block.caption ? `<p class="text-sm text-gray-400 mt-2">${escapeHtml(block.caption)}</p>` : '';
+          if (!url) return '';
+
+          if (block.type === 'video') {
+            return `<div>
+              <video src="${url}" class="rounded w-full bg-black" controls playsinline preload="metadata"></video>
+              ${caption}
+            </div>`;
+          }
+
+          return `<div>
+            <img src="${url}" class="rounded w-full" alt="${escapeHtml(block.caption || 'Project media')}">
+            ${caption}
+          </div>`;
+        })
+        .join('');
+    }
+
+    function normalizeBlocks(raw) {
+      if (!Array.isArray(raw)) return [];
+      return raw
+        .map((block) => {
+          const type = block && (block.type === 'image' || block.type === 'video' || block.type === 'text') ? block.type : 'text';
+          return {
+            type,
+            text: block && typeof block.text === 'string' ? block.text : '',
+            url: block && typeof block.url === 'string' ? block.url : '',
+            caption: block && typeof block.caption === 'string' ? block.caption : ''
+          };
+        })
+        .filter((block) => block.type === 'text' ? block.text.trim() : block.url.trim());
+    }
+
     function renderProject(project) {
+      const blocks = normalizeBlocks(project.contentBlocks);
       const media = !project.mediaSrc
         ? ''
         : project.mediaType === 'video'
@@ -63,12 +111,19 @@
         ? `<a href="${escapeHtml(project.link)}" class="inline-block mb-4 text-sky-300 hover:text-sky-200">Original Link</a>`
         : '';
 
+      let body = '';
+      if (blocks.length) {
+        body = `<p class="text-gray-300 leading-relaxed mb-5">${escapeHtml(project.description)}</p>
+          <div class="space-y-6">${renderContentBlocks(blocks)}</div>`;
+      } else {
+        body = `${media}<p class="text-gray-300 leading-relaxed">${escapeHtml(project.description)}</p>`;
+      }
+
       content.innerHTML = `
         <h1 class="text-4xl font-bold mb-3 text-white">${escapeHtml(project.title)}</h1>
         <div class="inline-block px-3 py-1 text-sm font-medium text-white bg-gray-700 rounded-full mb-4">${escapeHtml(project.status)}</div>
         ${external}
-        ${media}
-        <p class="text-gray-300 leading-relaxed">${escapeHtml(project.description)}</p>
+        ${body}
       `;
       document.title = `${project.title} | Sol Stirling Portfolio`;
     }
@@ -78,7 +133,7 @@
     }
 
     function mapRowToProject(row, index) {
-      return window.PortfolioProjects.sanitizeProject(
+      const base = window.PortfolioProjects.sanitizeProject(
         {
           id: row.project_key,
           title: row.title,
@@ -94,12 +149,50 @@
         },
         index
       );
+      base.contentBlocks = Array.isArray(row.content_blocks) ? row.content_blocks : [];
+      return base;
+    }
+
+    async function fetchProject(client, tableName, slug, ownerId) {
+      const baseCols = 'project_key,title,description,link,status,status_color,media_type,media_src,media_alt,media_poster,sort_order';
+      let query = client
+        .from(tableName)
+        .select(`${baseCols},content_blocks`)
+        .eq('site_slug', (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.siteSlug) || 'solstirling.com')
+        .eq('project_key', slug)
+        .limit(1)
+        .maybeSingle();
+
+      if (ownerId) {
+        query = query.eq('owner_id', ownerId);
+      }
+
+      let { data, error } = await query;
+      if (error && isMissingColumn(error, 'content_blocks')) {
+        let fallback = client
+          .from(tableName)
+          .select(baseCols)
+          .eq('site_slug', (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.siteSlug) || 'solstirling.com')
+          .eq('project_key', slug)
+          .limit(1)
+          .maybeSingle();
+
+        if (ownerId) {
+          fallback = fallback.eq('owner_id', ownerId);
+        }
+
+        ({ data, error } = await fallback);
+      }
+
+      return { data, error };
     }
 
     async function init() {
       setupBackButton();
+
       const params = new URLSearchParams(window.location.search);
       const slug = params.get('project');
+      const source = params.get('from') || 'live';
       if (!slug) {
         renderError('Missing project slug.');
         return;
@@ -112,20 +205,33 @@
       }
 
       const client = window.supabase.createClient(cfg.url, cfg.anonKey);
-      const { data, error } = await client
-        .from('portfolio_published')
-        .select('project_key,title,description,link,status,status_color,media_type,media_src,media_alt,media_poster,sort_order')
-        .eq('site_slug', cfg.siteSlug || 'solstirling.com')
-        .eq('project_key', slug)
-        .limit(1)
-        .maybeSingle();
+      const wantsDraft = source === 'draft' || source === 'dashboard-draft';
 
-      if (error || !data) {
+      if (wantsDraft) {
+        const { data: sessionData } = await client.auth.getSession();
+        const session = sessionData && sessionData.session;
+        if (!session || !session.user) {
+          renderError('Sign in required to view draft project pages.');
+          return;
+        }
+
+        const result = await fetchProject(client, 'portfolio_drafts', slug, session.user.id);
+        if (result.error || !result.data) {
+          renderError('Draft project not found.');
+          return;
+        }
+
+        renderProject(mapRowToProject(result.data, 0));
+        return;
+      }
+
+      const result = await fetchProject(client, 'portfolio_published', slug, null);
+      if (result.error || !result.data) {
         renderError('Project not found.');
         return;
       }
 
-      renderProject(mapRowToProject(data, 0));
+      renderProject(mapRowToProject(result.data, 0));
     }
 
     init();

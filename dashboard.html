@@ -51,7 +51,7 @@
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <section class="xl:col-span-2 bg-gray-900 border border-gray-800 rounded-xl p-5">
           <h3 id="form-title" class="text-xl font-semibold text-white mb-4">Add Draft Project</h3>
-          <form id="project-form" class="space-y-3">
+          <form id="project-form" class="space-y-4">
             <input id="project-id" type="hidden">
 
             <div>
@@ -65,7 +65,7 @@
             </div>
 
             <div>
-              <label class="text-sm text-gray-300">Description</label>
+              <label class="text-sm text-gray-300">Card Description (summary text)</label>
               <textarea id="description" rows="3" required class="w-full mt-1 bg-gray-950 border border-gray-700 rounded-md px-3 py-2"></textarea>
             </div>
 
@@ -92,7 +92,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="text-sm text-gray-300">Media Type</label>
+                <label class="text-sm text-gray-300">Card Media Type</label>
                 <select id="media-type" class="w-full mt-1 bg-gray-950 border border-gray-700 rounded-md px-3 py-2">
                   <option value="image">Image</option>
                   <option value="video">Video</option>
@@ -105,8 +105,17 @@
             </div>
 
             <div>
-              <label class="text-sm text-gray-300">Media URL/Path</label>
-              <input id="media-src" class="w-full mt-1 bg-gray-950 border border-gray-700 rounded-md px-3 py-2" placeholder="Optional for text-only project">
+              <label class="text-sm text-gray-300">Card Media URL (optional)</label>
+              <input id="media-src" class="w-full mt-1 bg-gray-950 border border-gray-700 rounded-md px-3 py-2" placeholder="Optional for text-only project cards">
+            </div>
+
+            <div>
+              <label class="text-sm text-gray-300">Card Media Upload (drag/drop)</label>
+              <div id="card-upload-drop" class="mt-1 border border-dashed border-gray-700 rounded-md px-3 py-4 bg-gray-950 text-center text-sm text-gray-400 cursor-pointer hover:border-sky-500 transition-colors">
+                Drag image/video here or click to upload
+              </div>
+              <input id="card-upload-input" type="file" accept="image/*,video/*" class="hidden">
+              <p id="card-upload-status" class="text-xs mt-2 text-gray-400"></p>
             </div>
 
             <div>
@@ -115,8 +124,25 @@
             </div>
 
             <div>
-              <label class="text-sm text-gray-300">Alt Text</label>
+              <label class="text-sm text-gray-300">Card Media Alt Text</label>
               <input id="media-alt" class="w-full mt-1 bg-gray-950 border border-gray-700 rounded-md px-3 py-2">
+            </div>
+
+            <div class="border border-gray-800 rounded-lg p-4 bg-gray-950/60">
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <div>
+                  <h4 class="font-semibold text-white">Project Content Builder</h4>
+                  <p class="text-xs text-gray-400">Order sections of text, images, and videos for each project page.</p>
+                </div>
+                <div class="flex gap-2">
+                  <button type="button" id="add-text-block" class="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded">+ Text</button>
+                  <button type="button" id="add-image-block" class="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded">+ Image</button>
+                  <button type="button" id="add-video-block" class="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded">+ Video</button>
+                </div>
+              </div>
+
+              <p id="content-warning" class="hidden text-xs text-yellow-300 mb-3"></p>
+              <div id="content-blocks-list" class="space-y-3"></div>
             </div>
 
             <div class="flex gap-2 pt-2">
@@ -146,6 +172,7 @@
 
   <script>
     const SITE_SLUG = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.siteSlug) || 'solstirling.com';
+
     const authPanel = document.getElementById('auth-panel');
     const dashboard = document.getElementById('dashboard');
     const configWarning = document.getElementById('config-warning');
@@ -162,6 +189,16 @@
     const publishBtn = document.getElementById('publish-btn');
     const syncBtn = document.getElementById('sync-btn');
     const logoutBtn = document.getElementById('logout-btn');
+
+    const addTextBlockBtn = document.getElementById('add-text-block');
+    const addImageBlockBtn = document.getElementById('add-image-block');
+    const addVideoBlockBtn = document.getElementById('add-video-block');
+    const blocksList = document.getElementById('content-blocks-list');
+    const contentWarning = document.getElementById('content-warning');
+
+    const cardUploadDrop = document.getElementById('card-upload-drop');
+    const cardUploadInput = document.getElementById('card-upload-input');
+    const cardUploadStatus = document.getElementById('card-upload-status');
 
     const fields = {
       id: document.getElementById('project-id'),
@@ -181,7 +218,9 @@
     let user = null;
     let draftProjects = [];
     let publishedProjects = [];
+    let activeBlocks = [];
     let syncIntervalId = null;
+    let supportsContentBlocks = true;
 
     function showError(el, message) {
       el.textContent = message;
@@ -196,6 +235,15 @@
     function showTempMessage(el) {
       el.classList.remove('hidden');
       setTimeout(() => el.classList.add('hidden'), 1800);
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
     }
 
     function slugify(value) {
@@ -218,8 +266,51 @@
       return `project.html?project=${encodeURIComponent(projectId)}&from=${encodeURIComponent(source || 'dashboard')}`;
     }
 
+    function isMissingColumn(error, columnName) {
+      const msg = String(error && error.message ? error.message : '').toLowerCase();
+      return (error && error.code === '42703') || msg.includes(columnName.toLowerCase());
+    }
+
+    function showContentBlocksWarning(text) {
+      contentWarning.textContent = text;
+      contentWarning.classList.remove('hidden');
+    }
+
+    function clearContentBlocksWarning() {
+      contentWarning.classList.add('hidden');
+      contentWarning.textContent = '';
+    }
+
+    function normalizeBlockForEditor(raw, index) {
+      const type = raw && (raw.type === 'image' || raw.type === 'video' || raw.type === 'text') ? raw.type : 'text';
+      return {
+        id: raw && raw.id ? String(raw.id) : `block-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 7)}`,
+        type,
+        text: raw && typeof raw.text === 'string' ? raw.text : '',
+        url: raw && typeof raw.url === 'string' ? raw.url : '',
+        caption: raw && typeof raw.caption === 'string' ? raw.caption : ''
+      };
+    }
+
+    function sanitizeContentBlocks(blocks) {
+      if (!Array.isArray(blocks)) return [];
+      return blocks
+        .map((raw, index) => normalizeBlockForEditor(raw, index))
+        .filter((b) => {
+          if (b.type === 'text') return b.text.trim().length > 0;
+          return b.url.trim().length > 0 || b.caption.trim().length > 0;
+        })
+        .map((b) => ({
+          id: b.id,
+          type: b.type,
+          text: b.type === 'text' ? b.text.trim() : '',
+          url: b.type !== 'text' ? b.url.trim() : '',
+          caption: b.type !== 'text' ? b.caption.trim() : ''
+        }));
+    }
+
     function mapRowToProject(row, idx) {
-      return window.PortfolioProjects.sanitizeProject(
+      const base = window.PortfolioProjects.sanitizeProject(
         {
           id: row.project_key,
           title: row.title,
@@ -235,6 +326,10 @@
         },
         idx
       );
+
+      const rawBlocks = row && Array.isArray(row.content_blocks) ? row.content_blocks : [];
+      base.contentBlocks = rawBlocks.map((b, i) => normalizeBlockForEditor(b, i));
+      return base;
     }
 
     function fillFormFromProject(project, modeLabel) {
@@ -249,6 +344,10 @@
       fields.mediaPoster.value = project.mediaPoster || '';
       fields.mediaAlt.value = project.mediaAlt || '';
       fields.sortOrder.value = project.sortOrder;
+      activeBlocks = Array.isArray(project.contentBlocks)
+        ? project.contentBlocks.map((b, i) => normalizeBlockForEditor(b, i))
+        : [];
+      renderBlocksEditor();
       formTitle.textContent = modeLabel;
       cancelEditBtn.classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -263,6 +362,62 @@
       fields.sortOrder.value = draftProjects.length;
       formTitle.textContent = 'Add Draft Project';
       cancelEditBtn.classList.add('hidden');
+      cardUploadStatus.textContent = '';
+      activeBlocks = [];
+      renderBlocksEditor();
+      clearContentBlocksWarning();
+    }
+
+    function createBlock(type) {
+      return {
+        id: `block-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        type,
+        text: '',
+        url: '',
+        caption: ''
+      };
+    }
+
+    function findBlockIndexById(id) {
+      return activeBlocks.findIndex((b) => b.id === id);
+    }
+
+    function renderBlocksEditor() {
+      if (!activeBlocks.length) {
+        blocksList.innerHTML = '<p class="text-sm text-gray-400">No content blocks yet. Add text/image/video blocks above.</p>';
+        return;
+      }
+
+      blocksList.innerHTML = activeBlocks
+        .map((b, idx) => {
+          const isText = b.type === 'text';
+          const typeLabel = b.type === 'text' ? 'Text' : b.type === 'video' ? 'Video' : 'Image';
+          const mediaControls = isText
+            ? `<textarea data-action="text" data-id="${b.id}" rows="4" class="w-full mt-2 bg-gray-900 border border-gray-700 rounded-md px-3 py-2" placeholder="Write text section...">${escapeHtml(b.text)}</textarea>`
+            : `<div class="space-y-2 mt-2">
+                <input data-action="url" data-id="${b.id}" value="${escapeHtml(b.url)}" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2" placeholder="Image/video URL">
+                <input data-action="caption" data-id="${b.id}" value="${escapeHtml(b.caption)}" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2" placeholder="Caption (optional)">
+                <div class="border border-dashed border-gray-700 rounded-md px-3 py-3 bg-gray-900 text-xs text-gray-400" data-dropzone-id="${b.id}">
+                  Drag image/video here or
+                  <button type="button" data-action="choose-upload" data-id="${b.id}" class="underline text-sky-300 hover:text-sky-200">choose a file</button>
+                  <input type="file" accept="image/*,video/*" data-action="file" data-id="${b.id}" class="hidden">
+                </div>
+                ${b.url ? `<a href="${escapeHtml(b.url)}" target="_blank" class="text-xs text-sky-300 hover:text-sky-200">Preview media</a>` : ''}
+              </div>`;
+
+          return `<div class="border border-gray-800 rounded-lg p-3 bg-gray-900/60" data-block-root-id="${b.id}">
+            <div class="flex items-center justify-between gap-2">
+              <div class="text-xs uppercase tracking-wide text-gray-300">${typeLabel} Block #${idx + 1}</div>
+              <div class="flex gap-1">
+                <button type="button" data-action="move-up" data-id="${b.id}" class="px-2 py-1 text-xs bg-gray-800 rounded hover:bg-gray-700">Up</button>
+                <button type="button" data-action="move-down" data-id="${b.id}" class="px-2 py-1 text-xs bg-gray-800 rounded hover:bg-gray-700">Down</button>
+                <button type="button" data-action="delete-block" data-id="${b.id}" class="px-2 py-1 text-xs bg-red-700 rounded hover:bg-red-600">Delete</button>
+              </div>
+            </div>
+            ${mediaControls}
+          </div>`;
+        })
+        .join('');
     }
 
     function renderDraftList() {
@@ -273,22 +428,23 @@
       }
 
       draftList.innerHTML = ordered
-        .map((p) => `
-          <div class="border border-gray-800 rounded-lg p-3 bg-gray-950">
+        .map((p) => {
+          const blockCount = Array.isArray(p.contentBlocks) ? p.contentBlocks.length : 0;
+          return `<div class="border border-gray-800 rounded-lg p-3 bg-gray-950">
             <div class="flex items-start justify-between gap-2">
               <div>
-                <h4 class="font-semibold text-white">${p.title}</h4>
-                <a href="${autoLink(p.id, 'dashboard-draft')}" class="text-xs text-sky-300 hover:text-sky-200">${autoLink(p.id, 'dashboard-draft')}</a>
-                <p class="text-xs text-gray-400 mt-1">Order: ${p.sortOrder}</p>
-                <div class="mt-2 inline-block px-2 py-1 text-xs text-white rounded ${badgeClass(p.statusColor)}">${p.status}</div>
+                <h4 class="font-semibold text-white">${escapeHtml(p.title)}</h4>
+                <a href="${autoLink(p.id, 'dashboard-draft')}" class="text-xs text-sky-300 hover:text-sky-200">${escapeHtml(autoLink(p.id, 'dashboard-draft'))}</a>
+                <p class="text-xs text-gray-400 mt-1">Order: ${p.sortOrder} · Blocks: ${blockCount}</p>
+                <div class="mt-2 inline-block px-2 py-1 text-xs text-white rounded ${badgeClass(p.statusColor)}">${escapeHtml(p.status)}</div>
               </div>
               <div class="flex flex-col gap-2">
                 <button class="edit-draft-btn bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1 rounded" data-id="${p.id}">Edit</button>
                 <button class="delete-draft-btn bg-red-700 hover:bg-red-600 text-xs px-3 py-1 rounded" data-id="${p.id}">Delete</button>
               </div>
             </div>
-          </div>
-        `)
+          </div>`;
+        })
         .join('');
 
       draftList.querySelectorAll('.edit-draft-btn').forEach((btn) => {
@@ -335,22 +491,23 @@
       }
 
       publishedList.innerHTML = ordered
-        .map((p) => `
-          <div class="border border-gray-800 rounded-lg p-3 bg-gray-950">
+        .map((p) => {
+          const blockCount = Array.isArray(p.contentBlocks) ? p.contentBlocks.length : 0;
+          return `<div class="border border-gray-800 rounded-lg p-3 bg-gray-950">
             <div class="flex items-start justify-between gap-2">
               <div>
-                <h4 class="font-semibold text-white">${p.title}</h4>
-                <a href="${autoLink(p.id, 'dashboard-published')}" class="text-xs text-sky-300 hover:text-sky-200">${autoLink(p.id, 'dashboard-published')}</a>
-                <p class="text-xs text-gray-400 mt-1">Order: ${p.sortOrder}</p>
-                <div class="mt-2 inline-block px-2 py-1 text-xs text-white rounded ${badgeClass(p.statusColor)}">${p.status}</div>
+                <h4 class="font-semibold text-white">${escapeHtml(p.title)}</h4>
+                <a href="${autoLink(p.id, 'dashboard-published')}" class="text-xs text-sky-300 hover:text-sky-200">${escapeHtml(autoLink(p.id, 'dashboard-published'))}</a>
+                <p class="text-xs text-gray-400 mt-1">Order: ${p.sortOrder} · Blocks: ${blockCount}</p>
+                <div class="mt-2 inline-block px-2 py-1 text-xs text-white rounded ${badgeClass(p.statusColor)}">${escapeHtml(p.status)}</div>
               </div>
               <div class="flex flex-col gap-2">
                 <button class="edit-published-btn bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1 rounded" data-id="${p.id}">Edit</button>
                 <button class="delete-published-btn bg-red-700 hover:bg-red-600 text-xs px-3 py-1 rounded" data-id="${p.id}">Delete</button>
               </div>
             </div>
-          </div>
-        `)
+          </div>`;
+        })
         .join('');
 
       publishedList.querySelectorAll('.edit-published-btn').forEach((btn) => {
@@ -401,31 +558,44 @@
       });
     }
 
-    async function loadDrafts() {
-      const { data, error } = await client
-        .from('portfolio_drafts')
-        .select('project_key,title,description,link,status,status_color,media_type,media_src,media_alt,media_poster,sort_order')
+    async function fetchProjects(tableName) {
+      const baseCols = 'project_key,title,description,link,status,status_color,media_type,media_src,media_alt,media_poster,sort_order';
+      const selectedCols = supportsContentBlocks ? `${baseCols},content_blocks` : baseCols;
+
+      let query = client
+        .from(tableName)
+        .select(selectedCols)
         .eq('site_slug', SITE_SLUG)
         .eq('owner_id', user.id)
-        .order('sort_order', { ascending: true })
-        .order('updated_at', { ascending: false });
+        .order('sort_order', { ascending: true });
+
+      query = tableName === 'portfolio_drafts'
+        ? query.order('updated_at', { ascending: false })
+        : query.order('published_at', { ascending: false });
+
+      let { data, error } = await query;
+      if (error && supportsContentBlocks && isMissingColumn(error, 'content_blocks')) {
+        supportsContentBlocks = false;
+        showContentBlocksWarning('Content block columns are missing in DB. Run supabase/content_media_migration.sql, then reload.');
+        ({ data, error } = await client
+          .from(tableName)
+          .select(baseCols)
+          .eq('site_slug', SITE_SLUG)
+          .eq('owner_id', user.id)
+          .order('sort_order', { ascending: true }));
+      }
 
       if (error) throw error;
-      draftProjects = (data || []).map(mapRowToProject);
+      return (data || []).map((row, idx) => mapRowToProject(row, idx));
+    }
+
+    async function loadDrafts() {
+      draftProjects = await fetchProjects('portfolio_drafts');
       renderDraftList();
     }
 
     async function loadPublished() {
-      const { data, error } = await client
-        .from('portfolio_published')
-        .select('project_key,title,description,link,status,status_color,media_type,media_src,media_alt,media_poster,sort_order')
-        .eq('site_slug', SITE_SLUG)
-        .eq('owner_id', user.id)
-        .order('sort_order', { ascending: true })
-        .order('published_at', { ascending: false });
-
-      if (error) throw error;
-      publishedProjects = (data || []).map(mapRowToProject);
+      publishedProjects = await fetchProjects('portfolio_published');
       renderPublishedList();
     }
 
@@ -452,7 +622,21 @@
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await client.from('portfolio_drafts').upsert(row, { onConflict: 'owner_id,site_slug,project_key' });
+      if (supportsContentBlocks) {
+        row.content_blocks = sanitizeContentBlocks(project.contentBlocks);
+      }
+
+      let { error } = await client
+        .from('portfolio_drafts')
+        .upsert(row, { onConflict: 'owner_id,site_slug,project_key' });
+
+      if (error && supportsContentBlocks && isMissingColumn(error, 'content_blocks')) {
+        supportsContentBlocks = false;
+        showContentBlocksWarning('Content block columns are missing in DB. Run supabase/content_media_migration.sql, then reload.');
+        delete row.content_blocks;
+        ({ error } = await client.from('portfolio_drafts').upsert(row, { onConflict: 'owner_id,site_slug,project_key' }));
+      }
+
       if (error) throw error;
     }
 
@@ -462,24 +646,41 @@
         throw new Error('No draft projects to publish.');
       }
 
-      const rows = orderedDrafts.map((p) => ({
-        owner_id: user.id,
-        site_slug: SITE_SLUG,
-        project_key: p.id,
-        title: p.title,
-        description: p.description,
-        link: autoLink(p.id, 'live'),
-        status: p.status,
-        status_color: p.statusColor,
-        media_type: p.mediaType,
-        media_src: p.mediaSrc,
-        media_alt: p.mediaAlt,
-        media_poster: p.mediaPoster,
-        sort_order: p.sortOrder,
-        published_at: new Date().toISOString()
-      }));
+      const rows = orderedDrafts.map((p) => {
+        const row = {
+          owner_id: user.id,
+          site_slug: SITE_SLUG,
+          project_key: p.id,
+          title: p.title,
+          description: p.description,
+          link: autoLink(p.id, 'live'),
+          status: p.status,
+          status_color: p.statusColor,
+          media_type: p.mediaType,
+          media_src: p.mediaSrc,
+          media_alt: p.mediaAlt,
+          media_poster: p.mediaPoster,
+          sort_order: p.sortOrder,
+          published_at: new Date().toISOString()
+        };
+        if (supportsContentBlocks) {
+          row.content_blocks = sanitizeContentBlocks(p.contentBlocks);
+        }
+        return row;
+      });
 
-      const upsert = await client.from('portfolio_published').upsert(rows, { onConflict: 'owner_id,site_slug,project_key' });
+      let upsert = await client.from('portfolio_published').upsert(rows, { onConflict: 'owner_id,site_slug,project_key' });
+      if (upsert.error && supportsContentBlocks && isMissingColumn(upsert.error, 'content_blocks')) {
+        supportsContentBlocks = false;
+        showContentBlocksWarning('Content block columns are missing in DB. Run supabase/content_media_migration.sql, then reload.');
+        const rowsNoContent = rows.map((r) => {
+          const clone = { ...r };
+          delete clone.content_blocks;
+          return clone;
+        });
+        upsert = await client.from('portfolio_published').upsert(rowsNoContent, { onConflict: 'owner_id,site_slug,project_key' });
+      }
+
       if (upsert.error) throw upsert.error;
 
       const keys = orderedDrafts.map((p) => p.id);
@@ -491,6 +692,80 @@
         .in('project_key', keys);
 
       if (clearDrafts.error) throw clearDrafts.error;
+    }
+
+    async function uploadMediaFile(file) {
+      if (!file) throw new Error('No file selected.');
+      if (!user) throw new Error('Sign in required.');
+
+      const mime = String(file.type || '');
+      const isImage = mime.startsWith('image/');
+      const isVideo = mime.startsWith('video/');
+      if (!isImage && !isVideo) {
+        throw new Error('Only image/video files are supported.');
+      }
+
+      const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-');
+      const path = `${user.id}/${SITE_SLUG}/${Date.now()}-${safeName}`;
+      const { data, error } = await client
+        .storage
+        .from('portfolio-media')
+        .upload(path, file, { upsert: false, cacheControl: '3600' });
+
+      if (error) {
+        throw error;
+      }
+
+      const { data: pub } = client.storage.from('portfolio-media').getPublicUrl(data.path);
+      return {
+        url: pub.publicUrl,
+        mediaType: isVideo ? 'video' : 'image'
+      };
+    }
+
+    function formatUploadError(error) {
+      const msg = String(error && error.message ? error.message : error);
+      if (msg.toLowerCase().includes('bucket')) {
+        return 'Upload bucket missing or not permitted. Run supabase/content_media_migration.sql then retry.';
+      }
+      if (msg.toLowerCase().includes('row-level security') || msg.toLowerCase().includes('policy')) {
+        return 'Upload blocked by storage policy. Run supabase/content_media_migration.sql then retry.';
+      }
+      return msg;
+    }
+
+    async function handleCardFile(file) {
+      hideError(dashError);
+      cardUploadStatus.textContent = 'Uploading...';
+      cardUploadStatus.className = 'text-xs mt-2 text-gray-300';
+      try {
+        const uploaded = await uploadMediaFile(file);
+        fields.mediaSrc.value = uploaded.url;
+        fields.mediaType.value = uploaded.mediaType;
+        cardUploadStatus.textContent = 'Uploaded and linked to card media.';
+        cardUploadStatus.className = 'text-xs mt-2 text-green-400';
+      } catch (error) {
+        cardUploadStatus.textContent = formatUploadError(error);
+        cardUploadStatus.className = 'text-xs mt-2 text-red-400';
+      }
+    }
+
+    async function handleBlockFile(blockId, file) {
+      hideError(dashError);
+      try {
+        const uploaded = await uploadMediaFile(file);
+        const idx = findBlockIndexById(blockId);
+        if (idx < 0) return;
+        activeBlocks[idx].url = uploaded.url;
+        activeBlocks[idx].type = uploaded.mediaType;
+        renderBlocksEditor();
+      } catch (error) {
+        showError(dashError, formatUploadError(error));
+      }
+    }
+
+    function findBlockIndexById(id) {
+      return activeBlocks.findIndex((b) => b.id === id);
     }
 
     function startAutoSync() {
@@ -561,6 +836,134 @@
       }
     });
 
+    addTextBlockBtn.addEventListener('click', () => {
+      activeBlocks.push(createBlock('text'));
+      renderBlocksEditor();
+    });
+
+    addImageBlockBtn.addEventListener('click', () => {
+      activeBlocks.push(createBlock('image'));
+      renderBlocksEditor();
+    });
+
+    addVideoBlockBtn.addEventListener('click', () => {
+      activeBlocks.push(createBlock('video'));
+      renderBlocksEditor();
+    });
+
+    blocksList.addEventListener('input', (event) => {
+      const target = event.target;
+      const action = target.dataset.action;
+      const id = target.dataset.id;
+      if (!action || !id) return;
+
+      const idx = findBlockIndexById(id);
+      if (idx < 0) return;
+
+      if (action === 'text') activeBlocks[idx].text = target.value;
+      if (action === 'url') activeBlocks[idx].url = target.value;
+      if (action === 'caption') activeBlocks[idx].caption = target.value;
+    });
+
+    blocksList.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+
+      const action = button.dataset.action;
+      const id = button.dataset.id;
+      if (!id) return;
+
+      const idx = findBlockIndexById(id);
+      if (idx < 0) return;
+
+      if (action === 'move-up' && idx > 0) {
+        const tmp = activeBlocks[idx - 1];
+        activeBlocks[idx - 1] = activeBlocks[idx];
+        activeBlocks[idx] = tmp;
+        renderBlocksEditor();
+        return;
+      }
+
+      if (action === 'move-down' && idx < activeBlocks.length - 1) {
+        const tmp = activeBlocks[idx + 1];
+        activeBlocks[idx + 1] = activeBlocks[idx];
+        activeBlocks[idx] = tmp;
+        renderBlocksEditor();
+        return;
+      }
+
+      if (action === 'delete-block') {
+        activeBlocks.splice(idx, 1);
+        renderBlocksEditor();
+        return;
+      }
+
+      if (action === 'choose-upload') {
+        const input = blocksList.querySelector(`input[data-action="file"][data-id="${id}"]`);
+        if (input) input.click();
+      }
+    });
+
+    blocksList.addEventListener('change', async (event) => {
+      const input = event.target;
+      if (input.dataset.action !== 'file') return;
+      const id = input.dataset.id;
+      const file = input.files && input.files[0];
+      if (!id || !file) return;
+      await handleBlockFile(id, file);
+      input.value = '';
+    });
+
+    blocksList.addEventListener('dragover', (event) => {
+      const zone = event.target.closest('[data-dropzone-id]');
+      if (!zone) return;
+      event.preventDefault();
+      zone.classList.add('border-sky-500');
+    });
+
+    blocksList.addEventListener('dragleave', (event) => {
+      const zone = event.target.closest('[data-dropzone-id]');
+      if (!zone) return;
+      zone.classList.remove('border-sky-500');
+    });
+
+    blocksList.addEventListener('drop', async (event) => {
+      const zone = event.target.closest('[data-dropzone-id]');
+      if (!zone) return;
+      event.preventDefault();
+      zone.classList.remove('border-sky-500');
+      const id = zone.dataset.dropzoneId;
+      const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+      if (!id || !file) return;
+      await handleBlockFile(id, file);
+    });
+
+    cardUploadDrop.addEventListener('click', () => cardUploadInput.click());
+
+    cardUploadDrop.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      cardUploadDrop.classList.add('border-sky-500');
+    });
+
+    cardUploadDrop.addEventListener('dragleave', () => {
+      cardUploadDrop.classList.remove('border-sky-500');
+    });
+
+    cardUploadDrop.addEventListener('drop', async (event) => {
+      event.preventDefault();
+      cardUploadDrop.classList.remove('border-sky-500');
+      const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+      if (!file) return;
+      await handleCardFile(file);
+    });
+
+    cardUploadInput.addEventListener('change', async () => {
+      const file = cardUploadInput.files && cardUploadInput.files[0];
+      if (!file) return;
+      await handleCardFile(file);
+      cardUploadInput.value = '';
+    });
+
     projectForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       hideError(dashError);
@@ -587,6 +990,8 @@
         },
         draftProjects.length
       );
+
+      clean.contentBlocks = sanitizeContentBlocks(activeBlocks);
 
       try {
         await saveDraftProject(clean);
@@ -627,8 +1032,10 @@
       user = null;
       draftProjects = [];
       publishedProjects = [];
+      activeBlocks = [];
       draftList.innerHTML = '';
       publishedList.innerHTML = '';
+      blocksList.innerHTML = '';
       dashboard.classList.add('hidden');
       authPanel.classList.remove('hidden');
     });
