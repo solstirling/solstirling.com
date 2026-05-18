@@ -3,6 +3,29 @@
 
   const defaultProjects = [
     {
+      id: 'kyle',
+      title: 'Kyle',
+      status: 'live',
+      statusColor: 'blue',
+      date: '1/8/26',
+      description:
+        'Kyle is a web app I developed to learn more about API\'s and integrating AI into my projects. It asks for a geopolitical conflict description and returns a strategic analysis, predicted outcomes, and market impacts.',
+      link: 'https://kyle-rho.vercel.app/',
+      mediaType: 'image',
+      mediaSrc: 'images/kyle-card.png',
+      mediaAlt: 'Kyle conflict analysis app',
+      mediaPoster: '',
+      contentBlocks: [
+        {
+          id: 'kyle-intro',
+          type: 'text',
+          text:
+            '<p>Kyle is a web app for conflict scenario analysis. Paste a conflict description and it returns strategic analysis, predicted outcomes, and market impacts.</p>'
+        }
+      ],
+      sortOrder: 0
+    },
+    {
       id: 'overdrive2026',
       title: '2026 FRC Robot: OVERDRIVE',
       status: 'complete',
@@ -40,7 +63,7 @@
         { id: 'overdrive2026-o3', type: 'image', url: 'images/overdrive-o3.png', caption: 'Superstructure integration' },
         { id: 'overdrive2026-o4', type: 'image', url: 'images/overdrive-o4.jpg', caption: 'OVERDRIVE detail' }
       ],
-      sortOrder: 0
+      sortOrder: 1
     },
     {
       id: 'robot2025',
@@ -84,7 +107,7 @@
         },
         { id: 'robot2025-climb-img', type: 'image', url: 'images/rclimb.png', caption: 'The climb' }
       ],
-      sortOrder: 0
+      sortOrder: 2
     },
     {
       id: 'diffy',
@@ -122,7 +145,7 @@
         },
         { id: 'diffy-build-img', type: 'image', url: 'images/diffybuild.jpg', caption: '' }
       ],
-      sortOrder: 1
+      sortOrder: 3
     },
     {
       id: 'capstan',
@@ -145,29 +168,6 @@
             '<p>All of the different iterations of my easy capstan pivot. I wanted to pursue this type of power transmission to see if it was worth applying to FRC.</p>'
         },
         { id: 'capstan-main-img', type: 'image', url: 'images/capstanmain.png', caption: '' }
-      ],
-      sortOrder: 2
-    },
-    {
-      id: 'kyle',
-      title: 'Kyle',
-      status: 'live',
-      statusColor: 'blue',
-      date: '1/8/26',
-      description:
-        'Kyle is a web app I developed to learn more about API\'s and integrating AI into my projects. It asks for a geopolitical conflict description and returns a strategic analysis, predicted outcomes, and market impacts.',
-      link: 'https://kyle-rho.vercel.app/',
-      mediaType: 'image',
-      mediaSrc: 'images/kyle-card.png',
-      mediaAlt: 'Kyle conflict analysis app',
-      mediaPoster: '',
-      contentBlocks: [
-        {
-          id: 'kyle-intro',
-          type: 'text',
-          text:
-            '<p>Kyle is a web app for conflict scenario analysis. Paste a conflict description and it returns strategic analysis, predicted outcomes, and market impacts.</p>'
-        }
       ],
       sortOrder: 4
     }
