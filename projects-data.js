@@ -3,34 +3,11 @@
 
   const defaultProjects = [
     {
-      id: 'kyle',
-      title: 'Kyle',
-      status: 'live',
-      statusColor: 'blue',
-      date: '1/8/26',
-      description:
-        'Kyle is a web app I developed to learn more about API\'s and integrating AI into my projects. It asks for a geopolitical conflict description and returns a strategic analysis, predicted outcomes, and market impacts.',
-      link: 'https://kyle-rho.vercel.app/',
-      mediaType: 'image',
-      mediaSrc: 'images/kyle-card.png',
-      mediaAlt: 'Kyle conflict analysis app',
-      mediaPoster: '',
-      contentBlocks: [
-        {
-          id: 'kyle-intro',
-          type: 'text',
-          text:
-            '<p>Kyle is a web app for conflict scenario analysis. Paste a conflict description and it returns strategic analysis, predicted outcomes, and market impacts.</p>'
-        }
-      ],
-      sortOrder: 0
-    },
-    {
       id: 'overdrive2026',
       title: '2026 FRC Robot: OVERDRIVE',
       status: 'complete',
       statusColor: 'green',
-      date: '3/10/25',
+      date: '3/10/26',
       description:
         'NOMAD 2026 robot design lead work focused on the Dye Rotor and superstructure for a moving, high-throughput ball-scoring machine.',
       link: 'project.html?project=overdrive2026',
@@ -62,6 +39,29 @@
         },
         { id: 'overdrive2026-o3', type: 'image', url: 'images/overdrive-o3.png', caption: 'Superstructure integration' },
         { id: 'overdrive2026-o4', type: 'image', url: 'images/overdrive-o4.jpg', caption: 'OVERDRIVE detail' }
+      ],
+      sortOrder: 0
+    },
+    {
+      id: 'kyle',
+      title: 'Kyle',
+      status: 'live',
+      statusColor: 'blue',
+      date: '1/8/26',
+      description:
+        'Kyle is a web app I developed to learn more about API\'s and integrating AI into my projects. It asks for a geopolitical conflict description and returns a strategic analysis, predicted outcomes, and market impacts.',
+      link: 'https://kyle-rho.vercel.app/',
+      mediaType: 'image',
+      mediaSrc: 'images/kyle-card.png',
+      mediaAlt: 'Kyle conflict analysis app',
+      mediaPoster: '',
+      contentBlocks: [
+        {
+          id: 'kyle-intro',
+          type: 'text',
+          text:
+            '<p>Kyle is a web app for conflict scenario analysis. Paste a conflict description and it returns strategic analysis, predicted outcomes, and market impacts.</p>'
+        }
       ],
       sortOrder: 1
     },
