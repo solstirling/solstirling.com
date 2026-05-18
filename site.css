@@ -663,3 +663,27 @@ h3 {
 .project-carousel .project-card:focus-visible {
   box-shadow: -22px 24px 0 rgba(0, 0, 0, 0.34), 0 0 0 1px rgba(0, 104, 123, 0.35);
 }
+
+/* Reliability pass: keep the deck in normal centered flow and avoid stale clipped positioning. */
+.project-carousel {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 76px clamp(42px, 9vw, 132px) 108px;
+  transform: none;
+}
+
+.empty-projects {
+  width: 100%;
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media (max-width: 560px) {
+  .project-carousel {
+    max-width: 100%;
+    padding: 0 0 42px;
+  }
+}

@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sol Stirling Maker Portfolio</title>
-  <script src="projects-data.js"></script>
-  <link rel="stylesheet" href="site.css">
+  <script src="projects-data.js?v=20260518-2"></script>
+  <link rel="stylesheet" href="site.css?v=20260518-2">
 </head>
 <body>
   <header class="site-frame top-bar">
@@ -88,6 +88,11 @@
     }
 
     function renderProjectCards(projects) {
+      if (!projects.length) {
+        carousel.innerHTML = '<p class="empty-projects">Project data did not load. Refresh the page.</p>';
+        return;
+      }
+
       carousel.innerHTML = projects
         .map((project, index) => {
           const tilt = [-3, 2, -1, 3, -2][index % 5];
@@ -134,7 +139,10 @@
       window.location.href = `mailto:${target}?subject=${subject}&body=${body}`;
     });
 
-    renderProjectCards(window.PortfolioProjects.projects);
+    const projectList = window.PortfolioProjects && Array.isArray(window.PortfolioProjects.projects)
+      ? window.PortfolioProjects.projects
+      : [];
+    renderProjectCards(projectList);
   </script>
 </body>
 </html>
