@@ -5,8 +5,9 @@
     {
       id: 'overdrive2026',
       title: '2026 FRC Robot: OVERDRIVE',
-      status: 'Completed',
+      status: 'complete',
       statusColor: 'green',
+      date: '3/10/25',
       description:
         'NOMAD 2026 robot design lead work focused on the Dye Rotor and superstructure for a moving, high-throughput ball-scoring machine.',
       link: 'project.html?project=overdrive2026',
@@ -44,8 +45,9 @@
     {
       id: 'robot2025',
       title: '2025 FRC Robot',
-      status: 'Completed',
+      status: 'complete',
       statusColor: 'green',
+      date: '2/10/25',
       description:
         "A brief writeup of the main mechanisms I designed on this robot. After winning its first regional, this robot went on to win its division at the world championship and placed 3rd on the world stage.",
       link: 'project.html?project=robot2025',
@@ -87,8 +89,9 @@
     {
       id: 'diffy',
       title: 'Intro to Differential',
-      status: 'WIP',
-      statusColor: 'blue',
+      status: 'hold',
+      statusColor: 'gray',
+      date: '8/1/24',
       description:
         'A project to familiarize myself with designing bevel gears and programming differentials. This is my first time ever programming stepper motors, and outsourcing parts from vendors.',
       link: 'project.html?project=diffy',
@@ -124,8 +127,9 @@
     {
       id: 'capstan',
       title: 'Capstan Pivot',
-      status: 'WIP',
-      statusColor: 'blue',
+      status: 'hold',
+      statusColor: 'gray',
+      date: '8/1/24',
       description:
         'All of the different iterations of my easy capstan pivot. I wanted to pursue this type of power transmission to see if it was worth applying to FRC. I am currently working on V0 (prototype) of the capstan pivot.',
       link: 'project.html?project=capstan',
@@ -147,10 +151,11 @@
     {
       id: 'kyle',
       title: 'Kyle',
-      status: 'Live',
+      status: 'live',
       statusColor: 'blue',
+      date: '1/8/26',
       description:
-        'A web app that takes a conflict description and returns strategic analysis, predicted outcomes, and market impacts.',
+        'Kyle is a web app I developed to learn more about API\'s and integrating AI into my projects. It asks for a geopolitical conflict description and returns a strategic analysis, predicted outcomes, and market impacts.',
       link: 'https://kyle-rho.vercel.app/',
       mediaType: 'image',
       mediaSrc: 'images/kyle-card.png',
@@ -180,9 +185,10 @@
     const mediaPoster = typeof input.mediaPoster === 'string' ? input.mediaPoster.trim() : '';
     const mediaAlt = typeof input.mediaAlt === 'string' && input.mediaAlt.trim() ? input.mediaAlt.trim() : title;
     const contentBlocks = Array.isArray(input.contentBlocks) ? input.contentBlocks : [];
+    const date = typeof input.date === 'string' && input.date.trim() ? input.date.trim() : ''; 
 
     const rawStatus = typeof input.status === 'string' && input.status.trim() ? input.status.trim() : 'WIP';
-    const normalizedStatus = ['Completed', 'WIP', 'Planned'].includes(rawStatus) ? rawStatus : rawStatus;
+    const normalizedStatus = rawStatus;
 
     const color = ['green', 'blue', 'yellow', 'gray', 'red'].includes(input.statusColor)
       ? input.statusColor
@@ -199,6 +205,7 @@
       title,
       status: normalizedStatus,
       statusColor: color,
+      date,
       description,
       link,
       mediaType,

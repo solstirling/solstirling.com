@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sol Stirling Maker Portfolio</title>
-  <script src="projects-data.js?v=20260518-2"></script>
-  <link rel="stylesheet" href="site.css?v=20260518-2">
+  <script src="projects-data.js?v=20260518-3"></script>
+  <link rel="stylesheet" href="site.css?v=20260518-3">
 </head>
 <body>
   <header class="site-frame top-bar">
@@ -111,10 +111,11 @@
               <div class="project-body">
                 <div class="project-meta">
                   <span>${label}</span>
-                  <span>${escapeHtml(project.status || 'Logged')}</span>
+                  <span>${escapeHtml(project.status || 'logged')}</span>
                 </div>
                 <h3>${escapeHtml(project.title)}</h3>
                 <p>${escapeHtml(project.description)}</p>
+                <div class="project-date">${escapeHtml(project.date || '')}</div>
                 <span class="card-open">${isExternal ? 'open app' : 'open file'}</span>
               </div>
             </a>
