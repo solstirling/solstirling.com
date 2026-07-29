@@ -4,74 +4,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Project | Sol Stirling Maker Portfolio</title>
-  <script src="projects-data.js?v=20260518-3"></script>
-  <link rel="stylesheet" href="site.css?v=20260518-3">
+  <script src="projects-data.js?v=20260729-6"></script>
+  <link rel="stylesheet" href="site.css?v=20260729-6">
 </head>
 <body>
-  <header class="site-frame top-bar">
-    <a href="index.html" class="logo-mark" aria-label="Sol Stirling home">
+  <nav class="site-nav" aria-label="Project navigation">
+    <a href="index.html" class="logo-only project-logo" aria-label="Sol Stirling home">
       <img src="images/logo.png" alt="Sol Stirling logo">
-      <span class="mark-text">
-        <span>maker portfolio</span>
-        <span>project file</span>
-      </span>
     </a>
-    <div class="owner-name">Sol Stirling</div>
-  </header>
+    <a class="back-link" href="index.html">back to projects</a>
+  </nav>
 
   <main class="site-frame project-shell">
-    <a class="back-link" href="index.html">back to homepage</a>
     <article id="project-content" class="project-detail"></article>
   </main>
 
   <script>
+    const portfolio = window.PortfolioProjects || {};
     const content = document.getElementById('project-content');
 
-    function escapeHtml(value) {
-      return String(value || '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
+    function renderHeroMedia(project) {
+      if (project.hideHeroMedia || !project.mediaSrc) return '';
 
-    function normalizeBlocks(raw) {
-      if (!Array.isArray(raw)) return [];
-      return raw.filter((block) => block && (block.text || block.url));
-    }
-
-    function renderBlock(block) {
-      if (block.type === 'image') {
-        const caption = block.caption ? `<p class="caption">${escapeHtml(block.caption)}</p>` : '';
-        return `<div><img src="${escapeHtml(block.url)}" alt="${escapeHtml(block.caption || 'Project media')}">${caption}</div>`;
+      if (project.mediaType === 'video') {
+        return `<video class="project-hero-media" src="${portfolio.escapeHtml(project.mediaSrc)}" controls playsinline preload="metadata"></video>`;
       }
 
-      if (block.type === 'video') {
-        const caption = block.caption ? `<p class="caption">${escapeHtml(block.caption)}</p>` : '';
-        return `<div><video src="${escapeHtml(block.url)}" controls playsinline preload="metadata"></video>${caption}</div>`;
-      }
-
-      return `<div class="content-block">${block.text || ''}</div>`;
+      return `<img class="project-hero-media" src="${portfolio.escapeHtml(project.mediaSrc)}" alt="${portfolio.escapeHtml(project.mediaAlt || project.title)}">`;
     }
 
     function renderProject(project) {
-      const blocks = normalizeBlocks(project.contentBlocks);
-      const media = project.hideHeroMedia
-        ? ''
-        : project.mediaType === 'video'
-          ? `<video class="project-hero-media" src="${escapeHtml(project.mediaSrc)}" controls playsinline preload="metadata"></video>`
-          : `<img class="project-hero-media" src="${escapeHtml(project.mediaSrc)}" alt="${escapeHtml(project.mediaAlt || project.title)}">`;
+      const heroMedia = renderHeroMedia(project);
+      const externalAction = project.externalLink
+        ? `<a class="project-action" href="${portfolio.escapeHtml(project.externalLink)}" target="_blank" rel="noopener noreferrer">open live project</a>`
+        : '';
 
       content.dataset.project = project.id;
       content.innerHTML = `
-        <div>
-          <p class="status-line">${escapeHtml(project.status || 'project')}${project.date ? ` / ${escapeHtml(project.date)}` : ''}</p>
-          <h1 class="project-title">${escapeHtml(project.title)}</h1>
-          <p class="project-lede">${escapeHtml(project.description)}</p>
+        <div class="project-heading">
+          <p class="status-line">${portfolio.escapeHtml(project.status || 'project')}${project.date ? ` / ${portfolio.escapeHtml(portfolio.formatProjectDate(project.date, { includeDay: true }))}` : ''}</p>
+          <h1 class="project-title">${portfolio.escapeHtml(project.title)}</h1>
+          <div class="project-lede markdown-copy">${portfolio.renderMarkdown(project.cardMarkdown)}</div>
+          ${externalAction}
         </div>
-        ${media ? `${media}` : ``}
-        <div class="content-stack">${blocks.map(renderBlock).join('')}</div>
+        ${heroMedia}
+        <div class="content-stack markdown-copy">${portfolio.renderMarkdown(project.bodyMarkdown)}</div>
       `;
       document.title = `${project.title} | Sol Stirling Maker Portfolio`;
     }
@@ -81,7 +58,7 @@
     }
 
     const slug = new URLSearchParams(window.location.search).get('project');
-    const projects = window.PortfolioProjects && window.PortfolioProjects.projects ? window.PortfolioProjects.projects : [];
+    const projects = portfolio.projects && Array.isArray(portfolio.projects) ? portfolio.projects : [];
     const project = projects.find((item) => item.id === slug);
 
     if (project) {
