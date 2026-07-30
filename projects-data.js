@@ -99,8 +99,6 @@ This is my favorite mechanism I have ever designed. It is simple, effective, rob
       bodyMarkdown: `
 This is my first, extremely basic, differential project. Due to my limited resources, it is mostly 3D printed, and I scrapped the bearings from an old pinball machine my brother made, but it works just fine. The main goal of this project was to learn to design with custom bevel gears. Below I talk about the design, build, and programming of this project.
 
-![Differential](images/rdiffy.png)
-
 ## The design
 
 I used two Nema 17 Stepper motors to power it, because I wanted to use [PD Stepper](https://github.com/joshr120/PD-Stepper) for control. The design process was pretty straightforward. I started with the bevel gears using the Gear Lab FeatureScript that Onshape offers, then built the rest off of the bevel gear spacing. I initially wanted to use timing belts 3D printed out of TPU, but after a bunch of failed attempts on my Bambu A1 mini, I decided to just buy some from V-Belt guys.
@@ -128,8 +126,6 @@ The diffy was assembled with 3D printed plates, gears, and axles, as well as met
       mediaAlt: 'Capstan preview',
       bodyMarkdown: `
 All of the different iterations of my easy capstan pivot. I wanted to pursue this type of power transmission to see if it was worth applying to FRC.
-
-![Capstan pivot](images/capstanmain.png)
       `,
       sortOrder: 4
     }
