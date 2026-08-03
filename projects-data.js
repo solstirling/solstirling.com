@@ -2,15 +2,15 @@
   const defaultProjects = [
     {
       id: 'potluck',
-      title: 'Potluck Pothole Mapper',
+      title: 'Potluck',
       status: 'testing',
       statusColor: 'yellow',
       date: '2026-06-13',
       cardMarkdown:
         'A testing-stage pothole mapper pairing a vehicle-mounted IMU with iPhone GPS, offline recovery, and exportable road data.',
       mediaType: 'image',
-      mediaSrc: 'images/potluck-01-testing-dashboard.jpg',
-      mediaAlt: 'Potluck sensor dashboard showing live motion data during testing',
+      mediaSrc: 'images/potluck-06-route-map.jpg',
+      mediaAlt: 'Potluck iPhone route map showing detected road impacts',
       hideHeroMedia: true,
       bodyMarkdown: `
 Potluck is a work-in-progress system for detecting and mapping potholes during ordinary drives. A BNO085 inertial sensor and XIAO ESP32S3 watch for road impacts while an iPhone app supplies GPS, stores each session, maps detections, and exports the data for review.
@@ -19,21 +19,21 @@ Potluck is a work-in-progress system for detecting and mapping potholes during o
 
 The full pipeline is working: the sensor detects impacts, Bluetooth carries them to the phone, the board keeps a flash backup through disconnects, and the app turns a completed drive into a route with road-condition colors and impact markers. I am now running repeatable routes, comparing detections with real road features, and tuning false positives and missed events.
 
-![Early live dashboard used to inspect the IMU signal and orientation during development](images/potluck-01-testing-dashboard.jpg)
+![Live dashboard used to inspect the IMU signal and orientation during development](images/potluck-testing-dashboard.gif)
 
 ## From breadboard to road test
 
-The current electronics are built around a Seeed Studio XIAO ESP32S3 and BNO085 IMU. The sensor reads linear acceleration and rotation at 100 Hz, compensates for vehicle orientation, filters ordinary vibration, and looks for the drop-and-rebound pattern of a pothole.
+The close-up below is the first version of the hardware. It used an older IMU that would not produce reliable data, even after I tried step-up conversion. I replaced that sensor and rebuilt the sensing stack around a BNO085, which is the version now being tested.
 
-![Close-up of the XIAO ESP32S3 and BNO085 breadboard prototype](images/potluck-02-breadboard-closeup.jpg)
+![First hardware revision with the original IMU that failed even after step-up attempts](images/potluck-02-breadboard-closeup.jpg)
 
 ![The breadboard prototype mounted on the dashboard for an early road test](images/potluck-03-dashboard-road-test.jpg)
+
+The current electronics use a Seeed Studio XIAO ESP32S3 and BNO085 IMU. The sensor reads linear acceleration and rotation at 100 Hz, compensates for vehicle orientation, filters ordinary vibration, and looks for the drop-and-rebound pattern of a pothole.
 
 ## Building the testing loop
 
 I started with a desktop logger so I could see the raw motion signal inside the car and iterate on the detector. The current iPhone app adds a dedicated testing mode: a passenger can label potholes, drain covers, dips, lane bumps, rough road, and smooth road while each tap saves a four-second IMU window for later analysis.
-
-![Desktop logger capturing motion data during an early in-car test](images/potluck-04-desktop-logger.jpg)
 
 The field setup now uses a more secure printed enclosure and a rigid dashboard mount. Mounting matters because a loose sensor can create motion that looks like a road impact.
 
