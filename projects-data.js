@@ -1,6 +1,68 @@
 (function () {
   const defaultProjects = [
     {
+      id: 'potluck',
+      title: 'Potluck Pothole Mapper',
+      status: 'testing',
+      statusColor: 'yellow',
+      date: '2026-06-13',
+      cardMarkdown:
+        'A testing-stage pothole mapper pairing a vehicle-mounted IMU with iPhone GPS, offline recovery, and exportable road data.',
+      mediaType: 'image',
+      mediaSrc: 'images/potluck-01-testing-dashboard.jpg',
+      mediaAlt: 'Potluck sensor dashboard showing live motion data during testing',
+      hideHeroMedia: true,
+      bodyMarkdown: `
+Potluck is a work-in-progress system for detecting and mapping potholes during ordinary drives. A BNO085 inertial sensor and XIAO ESP32S3 watch for road impacts while an iPhone app supplies GPS, stores each session, maps detections, and exports the data for review.
+
+## Current state: testing
+
+The full pipeline is working: the sensor detects impacts, Bluetooth carries them to the phone, the board keeps a flash backup through disconnects, and the app turns a completed drive into a route with road-condition colors and impact markers. I am now running repeatable routes, comparing detections with real road features, and tuning false positives and missed events.
+
+![Early live dashboard used to inspect the IMU signal and orientation during development](images/potluck-01-testing-dashboard.jpg)
+
+## From breadboard to road test
+
+The current electronics are built around a Seeed Studio XIAO ESP32S3 and BNO085 IMU. The sensor reads linear acceleration and rotation at 100 Hz, compensates for vehicle orientation, filters ordinary vibration, and looks for the drop-and-rebound pattern of a pothole.
+
+![Close-up of the XIAO ESP32S3 and BNO085 breadboard prototype](images/potluck-02-breadboard-closeup.jpg)
+
+![The breadboard prototype mounted on the dashboard for an early road test](images/potluck-03-dashboard-road-test.jpg)
+
+## Building the testing loop
+
+I started with a desktop logger so I could see the raw motion signal inside the car and iterate on the detector. The current iPhone app adds a dedicated testing mode: a passenger can label potholes, drain covers, dips, lane bumps, rough road, and smooth road while each tap saves a four-second IMU window for later analysis.
+
+![Desktop logger capturing motion data during an early in-car test](images/potluck-04-desktop-logger.jpg)
+
+The field setup now uses a more secure printed enclosure and a rigid dashboard mount. Mounting matters because a loose sensor can create motion that looks like a road impact.
+
+![Enclosed Potluck sensor mounted for field testing](images/potluck-05-enclosed-sensor.jpg)
+
+## From an impact to a map
+
+The phone handles GPS, background recording, session storage, and map rendering. The board handles detection and writes every event to LittleFS flash. If Bluetooth drops, the app requests the missed events after reconnecting and deduplicates them using the device and event IDs.
+
+The route view combines a provisional road-condition score with individual impact markers. The current shallow, medium, and deep labels describe impact severity—not literal pothole depth—and still need calibration across vehicles, speeds, tire pressures, and mounting positions.
+
+![Potluck iPhone route map showing detected deep impacts during a test drive](images/potluck-06-route-map.jpg)
+
+## Technical details
+
+- BNO085 linear acceleration and rotation sampled at 100 Hz
+- Orientation compensation, adaptive thresholds, and drop/rebound detection on the ESP32S3
+- Custom Bluetooth Low Energy protocol with a 50 Hz binary IMU stream during active tests
+- LittleFS JSONL backup and replay after disconnects
+- Native iOS app built with SwiftUI, SwiftData, Core Bluetooth, Core Location, and MapKit
+- Complete JSONL, training JSONL, pothole CSV, and GeoJSON exports
+
+## What is next
+
+The next hardware step is replacing the breadboard with a compact custom PCB and revising the enclosure around it. On the software side, I am preparing the iPhone app for App Store Connect and TestFlight so beta testers can install it without Xcode, collect drives on more vehicles, and send back consistent field data. Those tests will drive the next detector and reliability changes before I call Potluck finished.
+      `,
+      sortOrder: 0
+    },
+    {
       id: 'overdrive2026',
       title: '2026 FRC Robot: OVERDRIVE',
       status: 'complete',
@@ -32,7 +94,7 @@ The Dye Rotor ties into both the drivebase and the shooter, adding a lot of stre
 
 ![OVERDRIVE detail](images/overdrive-o4.jpg)
       `,
-      sortOrder: 0
+      sortOrder: 1
     },
     {
       id: 'kyle',
@@ -49,7 +111,7 @@ The Dye Rotor ties into both the drivebase and the shooter, adding a lot of stre
       bodyMarkdown: `
 Kyle is a web app for conflict scenario analysis. Paste a conflict description and it returns strategic analysis, predicted outcomes, and market impacts.
       `,
-      sortOrder: 1
+      sortOrder: 2
     },
     {
       id: 'robot2025',
@@ -83,7 +145,7 @@ This is my favorite mechanism I have ever designed. It is simple, effective, rob
 
 ![The climb](images/rclimb.png)
       `,
-      sortOrder: 2
+      sortOrder: 3
     },
     {
       id: 'diffy',
@@ -111,7 +173,7 @@ The diffy was assembled with 3D printed plates, gears, and axles, as well as met
 
 ![Diffy build](images/diffybuild.jpg)
       `,
-      sortOrder: 3
+      sortOrder: 4
     },
     {
       id: 'capstan',
@@ -127,13 +189,14 @@ The diffy was assembled with 3D printed plates, gears, and axles, as well as met
       bodyMarkdown: `
 All of the different iterations of my easy capstan pivot. I wanted to pursue this type of power transmission to see if it was worth applying to FRC.
       `,
-      sortOrder: 4
+      sortOrder: 5
     }
   ];
 
   const statusColors = {
     complete: 'green',
     live: 'blue',
+    testing: 'yellow',
     paused: 'gray'
   };
 
