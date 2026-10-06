@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Project | Sol Stirling Maker Portfolio</title>
-  <script src="projects-data.js?v=20260802-2"></script>
-  <link rel="stylesheet" href="site.css?v=20260802-2">
+  <script src="projects-data.js?v=20261006-1"></script>
+  <link rel="stylesheet" href="site.css?v=20261006-1">
 </head>
 <body>
   <nav class="site-nav" aria-label="Project navigation">
@@ -59,7 +59,8 @@
 
     const slug = new URLSearchParams(window.location.search).get('project');
     const projects = portfolio.projects && Array.isArray(portfolio.projects) ? portfolio.projects : [];
-    const project = projects.find((item) => item.id === slug);
+    const resolvedSlug = ['diffy', 'capstan'].includes(slug) ? 'misc-projects' : slug;
+    const project = projects.find((item) => item.id === resolvedSlug);
 
     if (project) {
       renderProject(project);

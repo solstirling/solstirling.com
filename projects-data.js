@@ -7,19 +7,26 @@
       statusColor: 'yellow',
       date: '2026-06-13',
       cardMarkdown:
-        'A testing-stage pothole mapper pairing a vehicle-mounted IMU with iPhone GPS, offline recovery, and exportable road data.',
+        'A road-data project pairing a dashboard-mounted IMU with iPhone GPS and video, with synchronized review and a custom PCB in progress.',
       mediaType: 'image',
-      mediaSrc: 'images/potluck-06-route-map.jpg',
-      mediaAlt: 'Potluck iPhone route map showing detected road impacts',
-      hideHeroMedia: true,
+      mediaSrc: 'images/potluck-schematic.png',
+      mediaAlt: 'Potluck custom PCB schematic in progress',
       bodyMarkdown: `
-Potluck is a work-in-progress system for detecting and mapping potholes during ordinary drives. A BNO085 inertial sensor and XIAO ESP32S3 watch for road impacts while an iPhone app supplies GPS, stores each session, maps detections, and exports the data for review.
+Potluck is a work-in-progress system for detecting and mapping potholes during ordinary drives. The current prototype pairs a BNO085 inertial sensor and XIAO ESP32S3 with an iPhone that records GPS, forward-facing video, and motion data for review after the drive.
 
 ## Current state: testing
 
-The full pipeline is working: the sensor detects impacts, Bluetooth carries them to the phone, the board keeps a flash backup through disconnects, and the app turns a completed drive into a route with road-condition colors and impact markers. I am now running repeatable routes, comparing detections with real road features, and tuning false positives and missed events.
+The current focus is collecting data I can actually check. The phone records video, GPS, IMU data, and detector output together. After a drive, a laptop reviewer plays the video alongside the graph and route so I can compare a spike with the road feature that caused it. The detector still needs repeatable field tests and tuning for false positives and missed events.
+
+## Moving toward a custom board
+
+The cover is my in-progress KiCad schematic for the next hardware revision. The current local design uses a BNO086, an ESP32-C3-MINI-1 module, USB-C, and a 3.3 V regulator to replace the breakout-board wiring. I am also planning around rigid mounting, a compact enclosure, and accessible test points so the hardware is easier to assemble and repeat. This is a design step toward a compact PCB, not a finished or validated board. The road-test hardware below is still the BNO085 and XIAO prototype.
 
 ![Live dashboard used to inspect the IMU signal and orientation during development](images/potluck-testing-dashboard.gif)
+
+## October update: more road data
+
+The latest repository update adds 90 iPhone recordings, four continuous model runs, and a saved sensor calibration from October 2. That gives us more real road data to review against the classifier. The newer export includes 20 recordings beyond the earlier backup used for v2; those extra recordings were not part of its 41-example training set. Model predictions and unreviewed labels still need to be checked before treating them as training evidence.
 
 ## From breadboard to road test
 
@@ -33,7 +40,7 @@ The current electronics use a Seeed Studio XIAO ESP32S3 and BNO085 IMU. The sens
 
 ## Building the testing loop
 
-I started with a desktop logger so I could see the raw motion signal inside the car and iterate on the detector. The current iPhone app adds a dedicated testing mode: a passenger can label potholes, drain covers, dips, lane bumps, rough road, and smooth road while each tap saves a four-second IMU window for later analysis.
+I started with a desktop logger so I could see the raw motion signal inside the car and iterate on the detector. The newer workflow moves detailed labeling to the laptop after the drive. I can mark potholes, drain covers, dips, and speed bumps, or label stretches of smooth, medium, and rough road. Timestamp-based playback keeps the video and motion data together, with a manual correction when the alignment needs adjustment.
 
 The field setup now uses a more secure printed enclosure and a rigid dashboard mount. Mounting matters because a loose sensor can create motion that looks like a road impact.
 
@@ -43,9 +50,13 @@ The field setup now uses a more secure printed enclosure and a rigid dashboard m
 
 The phone handles GPS, background recording, session storage, and map rendering. The board handles detection and writes every event to LittleFS flash. If Bluetooth drops, the app requests the missed events after reconnecting and deduplicates them using the device and event IDs.
 
-The route view combines a provisional road-condition score with individual impact markers. The current shallow, medium, and deep labels describe impact severity—not literal pothole depth—and still need calibration across vehicles, speeds, tire pressures, and mounting positions.
+The route view combines a provisional road-condition score with individual impact markers. The shallow, medium, and deep labels in the earlier map below describe impact severity, not literal pothole depth. The newer reviewer uses a provisional Potluck Impact Index alongside the motion measurements. Both need calibration across vehicles, speeds, tire pressures, and mounting positions.
 
 ![Potluck iPhone route map showing detected deep impacts during a test drive](images/potluck-06-route-map.jpg)
+
+## Reviewing the evidence
+
+A saved run contains the video, motion and GPS data, and a sync manifest. The reviewer lets me export labels alongside that run so I can keep the observations separate from the automatic detector output. It also has an evidence-image and post-draft workflow for human-confirmed potholes, with a final manual review before publishing. That workflow is part of the beta; it does not make the detector a verified depth sensor.
 
 ## Technical details
 
@@ -54,13 +65,50 @@ The route view combines a provisional road-condition score with individual impac
 - Custom Bluetooth Low Energy protocol with a 50 Hz binary IMU stream during active tests
 - LittleFS JSONL backup and replay after disconnects
 - Native iOS app built with SwiftUI, SwiftData, Core Bluetooth, Core Location, and MapKit
-- Complete JSONL, training JSONL, pothole CSV, and GeoJSON exports
+- Synchronized video, JSONL motion/GPS data, and a session manifest
+- Laptop video, graph, and map review with portable label exports
 
 ## What is next
 
-The next hardware step is replacing the breadboard with a compact custom PCB and revising the enclosure around it. On the software side, I am preparing the iPhone app for App Store Connect and TestFlight so beta testers can install it without Xcode, collect drives on more vehicles, and send back consistent field data. Those tests will drive the next detector and reliability changes before I call Potluck finished.
+The next hardware step is finishing and checking the schematic, laying out the PCB, and revising the enclosure around it. On the software side, I want more repeatable labeled drives and a reliable install path for beta testers through TestFlight. The priority is comparing detections with real road features across more vehicles before calling Potluck finished.
       `,
       sortOrder: 0
+    },
+    {
+      id: 'pocketbooth',
+      title: 'PocketBooth',
+      status: 'v1 prototype',
+      statusColor: 'yellow',
+      date: '2026-09-20',
+      cardMarkdown:
+        'An overnight, hands-on camera build for fun. A 1–2 day v1 that makes photo strips, with a pocket-sized version, flash, and Imation printing as the next goal.',
+      mediaType: 'image',
+      mediaSrc: 'images/pocketbooth-holding.jpg',
+      mediaAlt: 'Holding the first PocketBooth camera in its white 3D-printed enclosure',
+      bodyMarkdown: `
+I made PocketBooth because I wanted to build something for fun. This was an overnight, hands-on project, with about 1–2 days spent getting a v1 together. The idea was simple: make a camera that feels like a tiny photo booth and turns a few moments into a four-photo strip.
+
+## A quick first version
+
+The v1 brings a camera, Raspberry Pi, physical buttons, and a 3D-printed enclosure together. I wanted something I could hold and actually use, then improve from there. It is still a rough prototype, but getting from CAD to a physical camera was the fun part.
+
+![PocketBooth enclosure assembly in CAD](images/pocketbooth-assembly.png)
+
+![Inside the first enclosure, with the wiring and red and white buttons exposed](images/pocketbooth-inside.jpg)
+
+## What comes out of it
+
+These are actual photo strips from the prototype. The early desk shots and later kitchen shots capture the kind of casual, imperfect photos I wanted it to make. The software assembles four images into a strip, with filters and a phone workflow for saving the result.
+
+![An early four-photo strip from testing PocketBooth at my desk](images/pocketbooth-strip-desk.jpg)
+
+![A later PocketBooth strip from testing around the kitchen](images/pocketbooth-strip-kitchen.jpg)
+
+## Before my brother's wedding
+
+The goal is to make a pocket-sized version with a flash and printing through the Imation printer before my brother's wedding. The current enclosure is the first pass, and flash and printer integration are still next steps. For now, v1 gives me something tangible to test while I work out the smaller packaging and print workflow.
+      `,
+      sortOrder: 1
     },
     {
       id: 'overdrive2026',
@@ -94,7 +142,7 @@ The Dye Rotor ties into both the drivebase and the shooter, adding a lot of stre
 
 ![OVERDRIVE detail](images/overdrive-o4.jpg)
       `,
-      sortOrder: 1
+      sortOrder: 2
     },
     {
       id: 'kyle',
@@ -111,7 +159,7 @@ The Dye Rotor ties into both the drivebase and the shooter, adding a lot of stre
       bodyMarkdown: `
 Kyle is a web app for conflict scenario analysis. Paste a conflict description and it returns strategic analysis, predicted outcomes, and market impacts.
       `,
-      sortOrder: 2
+      sortOrder: 3
     },
     {
       id: 'robot2025',
@@ -145,20 +193,27 @@ This is my favorite mechanism I have ever designed. It is simple, effective, rob
 
 ![The climb](images/rclimb.png)
       `,
-      sortOrder: 3
+      sortOrder: 4
     },
     {
-      id: 'diffy',
-      title: 'Intro to Differential',
+      id: 'misc-projects',
+      title: 'misc projects',
       status: 'paused',
       statusColor: 'gray',
       date: '2024-08-01',
       cardMarkdown:
-        'A small differential project for learning bevel gears, stepper motors, and vendor-sourced parts with mostly 3D-printed hardware.',
+        'Small mechanical experiments: a 3D-printed differential and a capstan pivot, built to try out gears, packaging, and cord-driven motion.',
       mediaType: 'image',
       mediaSrc: 'images/rdiffy.png',
-      mediaAlt: 'Differential preview',
+      mediaAlt: '3D-printed differential from misc projects',
+      hideHeroMedia: true,
       bodyMarkdown: `
+A collection of smaller projects I built to learn a mechanism or try an idea.
+
+## Intro to Differential
+
+![Differential assembly](images/rdiffy.png)
+
 This is my first, extremely basic, differential project. Due to my limited resources, it is mostly 3D printed, and I scrapped the bearings from an old pinball machine my brother made, but it works just fine. The main goal of this project was to learn to design with custom bevel gears. Below I talk about the design, build, and programming of this project.
 
 ## The design
@@ -172,22 +227,12 @@ I used two Nema 17 Stepper motors to power it, because I wanted to use [PD Stepp
 The diffy was assembled with 3D printed plates, gears, and axles, as well as metric bearings and bolts, and finally some HTD timing belts and stepper motors. The only issue I ran into during assembly was the tolerances on the 3D printed parts.
 
 ![Diffy build](images/diffybuild.jpg)
-      `,
-      sortOrder: 4
-    },
-    {
-      id: 'capstan',
-      title: 'Capstan Pivot',
-      status: 'paused',
-      statusColor: 'gray',
-      date: '2024-08-01',
-      cardMarkdown:
-        'A capstan-pivot prototype exploring whether cord-based power transmission is useful for FRC mechanisms.',
-      mediaType: 'image',
-      mediaSrc: 'images/capstanmain.png',
-      mediaAlt: 'Capstan preview',
-      bodyMarkdown: `
+
+## Capstan Pivot
+
 All of the different iterations of my easy capstan pivot. I wanted to pursue this type of power transmission to see if it was worth applying to FRC.
+
+![Capstan pivot prototype](images/capstanmain.png)
       `,
       sortOrder: 5
     }
