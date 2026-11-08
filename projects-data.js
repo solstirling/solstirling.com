@@ -26,7 +26,11 @@ I’m finishing the remaining traces and still need to add the Potluck logo and 
 
 ![KiCad PCB Editor screenshot of the Potluck RevA layout with partially routed traces](images/potluck-reva-layout-screenshot-2026-11-08.png)
 
-![Earlier Potluck RevA schematic snapshot](images/potluck-schematic.png)
+### RevA schematic · November 8, 2026
+
+![Latest saved Potluck RevA schematic showing the BNO086 IMU, ESP32-C3, USB-C input, and 3.3 V regulator](images/potluck-reva-schematic-2026-11-08.png)
+
+[Open the full-size schematic](images/potluck-reva-schematic-2026-11-08.png)
 
 ## October 2, 2026 · Mira Mesa training drive
 
