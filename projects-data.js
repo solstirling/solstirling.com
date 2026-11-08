@@ -9,7 +9,7 @@
       cardMarkdown:
         'A road-data project that pairs a dashboard-mounted IMU with iPhone GPS and video. RevA is nearing the end of PCB layout, and I’m testing an on-device comparison model against labeled road data.',
       mediaType: 'image',
-      mediaSrc: 'images/potluck-reva-2026-11-08.png',
+      mediaSrc: 'images/potluck-reva-3d-screenshot-2026-11-08.png',
       mediaAlt: 'KiCad 3D view of the in-progress Potluck RevA PCB with the ESP32-C3, IMU, and USB-C connector',
       bodyMarkdown: `
 Potluck is a work-in-progress system for detecting and mapping potholes during ordinary drives. The current prototype pairs a BNO085 inertial sensor and XIAO ESP32S3 with an iPhone that records GPS, forward-facing video, and motion data for review after the drive.
@@ -20,11 +20,11 @@ The current focus is collecting data I can actually check. The phone records vid
 
 ## November 8, 2026 · RevA PCB update
 
-I fixed the issues from the first schematic review and have most of the RevA layout in place. The board puts a BNO086 near the center, with an ESP32-C3-MINI-1 module, USB-C, a 3.3 V regulator, and accessible test points. The 3D view above and copper plot below show the current KiCad revision.
+I fixed the issues from the first schematic review and have most of the RevA layout in place. The board puts a BNO086 near the center, with an ESP32-C3-MINI-1 module, USB-C, a 3.3 V regulator, and accessible test points. The screenshots above and below show the current KiCad 3D view and PCB layout.
 
 I’m finishing the remaining traces and still need to add the Potluck logo and board text to the silkscreen. The DigiKey parts cart is complete and ready to order. I’ll run the final layout checks before sending the board out; RevA hasn’t been fabricated or tested yet. The road-test hardware is still the BNO085 and XIAO prototype.
 
-![Current Potluck RevA copper plot showing component pads, board outline, and partially routed traces](images/potluck-reva-routing-2026-11-08.svg)
+![KiCad PCB Editor screenshot of the Potluck RevA layout with partially routed traces](images/potluck-reva-layout-screenshot-2026-11-08.png)
 
 ![Earlier Potluck RevA schematic snapshot](images/potluck-schematic.png)
 
