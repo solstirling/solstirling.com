@@ -7,10 +7,10 @@
       statusColor: 'yellow',
       date: '2026-06-13',
       cardMarkdown:
-        'A road-data project pairing a dashboard-mounted IMU with iPhone GPS and video, with synchronized review and a custom PCB in progress.',
+        'A road-data project that pairs a dashboard-mounted IMU with iPhone GPS and video. RevA is nearing the end of PCB layout, and I’m testing an on-device comparison model against labeled road data.',
       mediaType: 'image',
-      mediaSrc: 'images/potluck-schematic.png',
-      mediaAlt: 'Potluck custom PCB schematic in progress',
+      mediaSrc: 'images/potluck-reva-2026-11-08.png',
+      mediaAlt: 'KiCad 3D view of the in-progress Potluck RevA PCB with the ESP32-C3, IMU, and USB-C connector',
       bodyMarkdown: `
 Potluck is a work-in-progress system for detecting and mapping potholes during ordinary drives. The current prototype pairs a BNO085 inertial sensor and XIAO ESP32S3 with an iPhone that records GPS, forward-facing video, and motion data for review after the drive.
 
@@ -18,15 +18,29 @@ Potluck is a work-in-progress system for detecting and mapping potholes during o
 
 The current focus is collecting data I can actually check. The phone records video, GPS, IMU data, and detector output together. After a drive, a laptop reviewer plays the video alongside the graph and route so I can compare a spike with the road feature that caused it. The detector still needs repeatable field tests and tuning for false positives and missed events.
 
-## Moving toward a custom board
+## November 8, 2026 · RevA PCB update
 
-The cover is my in-progress KiCad schematic for the next hardware revision. The current local design uses a BNO086, an ESP32-C3-MINI-1 module, USB-C, and a 3.3 V regulator to replace the breakout-board wiring. I am also planning around rigid mounting, a compact enclosure, and accessible test points so the hardware is easier to assemble and repeat. This is a design step toward a compact PCB, not a finished or validated board. The road-test hardware below is still the BNO085 and XIAO prototype.
+I fixed the issues from the first schematic review and have most of the RevA layout in place. The board puts a BNO086 near the center, with an ESP32-C3-MINI-1 module, USB-C, a 3.3 V regulator, and accessible test points. The 3D view above and copper plot below show the current KiCad revision.
+
+I’m finishing the remaining traces and still need to add the Potluck logo and board text to the silkscreen. The DigiKey parts cart is complete and ready to order. I’ll run the final layout checks before sending the board out; RevA hasn’t been fabricated or tested yet. The road-test hardware is still the BNO085 and XIAO prototype.
+
+![Current Potluck RevA copper plot showing component pads, board outline, and partially routed traces](images/potluck-reva-routing-2026-11-08.svg)
+
+![Earlier Potluck RevA schematic snapshot](images/potluck-schematic.png)
+
+## October 2, 2026 · Mira Mesa training drive
+
+We drove in Mira Mesa to collect real examples for the pothole classifier, including normal driving and other disturbances that can look like potholes in the acceleration trace. The October 2 phone export contains **90 recordings, four continuous model runs, and a saved sensor calibration**. The recordings include timestamped XYZ and vertical acceleration, GPS fixes, and manual labels or model-review flags. The newer export has 20 more recordings than the earlier training snapshot.
+
+After filtering the earlier snapshot for usable human-labeled windows, **41 recordings went into v2: 17 pothole and 24 non-pothole**. Non-pothole examples include ordinary driving, freeway driving, curbs, and dips. I kept unreviewed predictions out of the training labels.
+
+## November 8, 2026 · Jev-like comparison model
+
+We now run the v2 comparison model on the iPhone. It scores consecutive 15-second windows using a regularized logistic regression over four features: vertical RMS, minimum and maximum vertical acceleration, and the absolute peak after low-pass filtering. GPS gives me context when I review a window; it does not feed the classifier. The model flags the window for review, so I can compare alerts and misses against human labels without guessing the exact impact time.
+
+On the 41-clip development set, archived v1 flagged **2 of 17** pothole windows and falsely flagged **1 of 24** negatives. In location-group validation, v2 found **12 of 17**, with **6 of 24** false alerts. Catching more potholes came with more false alarms. These are development results; the next check is an independent drive on unfamiliar roads.
 
 ![Live dashboard used to inspect the IMU signal and orientation during development](images/potluck-testing-dashboard.gif)
-
-## October update: more road data
-
-The latest repository update adds 90 iPhone recordings, four continuous model runs, and a saved sensor calibration from October 2. That gives us more real road data to review against the classifier. The newer export includes 20 recordings beyond the earlier backup used for v2; those extra recordings were not part of its 41-example training set. Model predictions and unreviewed labels still need to be checked before treating them as training evidence.
 
 ## From breadboard to road test
 
@@ -70,7 +84,7 @@ A saved run contains the video, motion and GPS data, and a sync manifest. The re
 
 ## What is next
 
-The next hardware step is finishing and checking the schematic, laying out the PCB, and revising the enclosure around it. On the software side, I want more repeatable labeled drives and a reliable install path for beta testers through TestFlight. The priority is comparing detections with real road features across more vehicles before calling Potluck finished.
+Next I’ll finish routing, add the silkscreen, and check the board before ordering. Once the first boards are assembled, I’ll verify power, USB flashing, and IMU readings before revising the enclosure. On the software side, I want an independent comparison drive, more repeatable labels across vehicles, and a reliable TestFlight install path.
       `,
       sortOrder: 0
     },
@@ -81,32 +95,42 @@ The next hardware step is finishing and checking the schematic, laying out the P
       statusColor: 'yellow',
       date: '2026-09-20',
       cardMarkdown:
-        'An overnight, hands-on camera build for fun. A 1–2 day v1 that makes photo strips, with a pocket-sized version, flash, and Imation printing as the next goal.',
+        'A 1–2 day photo booth prototype: a Raspberry Pi captures four frames from a USB camera, and a native iPhone app edits and saves the strip over local Wi-Fi.',
       mediaType: 'image',
       mediaSrc: 'images/pocketbooth-holding.jpg',
       mediaAlt: 'Holding the first PocketBooth camera in its white 3D-printed enclosure',
       bodyMarkdown: `
 I made PocketBooth because I wanted to build something for fun. This was an overnight, hands-on project, with about 1–2 days spent getting a v1 together. The idea was simple: make a camera that feels like a tiny photo booth and turns a few moments into a four-photo strip.
 
-## A quick first version
+## November 8, 2026 · Technical writeup revision
 
-The v1 brings a camera, Raspberry Pi, physical buttons, and a 3D-printed enclosure together. I wanted something I could hold and actually use, then improve from there. It is still a rough prototype, but getting from CAD to a physical camera was the fun part.
+### Camera, controls, and enclosure
+
+I built v1 around a Raspberry Pi 3B, a USB camera, two momentary buttons, and a 3D-printed enclosure. The Pi runs the capture service under systemd. It opens the camera through OpenCV and Linux V4L2, requests 1280 × 720 MJPEG at 30 fps, and keeps the latest frame available for the shutter. The camera and driver negotiate the actual frame rate.
+
+The white button is wired to GPIO17 and captures the next frame, up to four per strip. The red button is wired to GPIO27 and archives the current strip before starting another. Both switches pull their input to ground on press. Keeping the controls on the Pi makes the camera usable without tapping the phone for each shot.
 
 ![PocketBooth enclosure assembly in CAD](images/pocketbooth-assembly.png)
 
 ![Inside the first enclosure, with the wiring and red and white buttons exposed](images/pocketbooth-inside.jpg)
 
-## What comes out of it
+### Local Wi-Fi and the iPhone app
 
-These are actual photo strips from the prototype. The early desk shots and later kitchen shots capture the kind of casual, imperfect photos I wanted it to make. The software assembles four images into a strip, with filters and a phone workflow for saving the result.
+The Pi runs its own Wi-Fi access point. The SwiftUI app joins that local camera network, pairs with a camera key stored in the iOS Keychain, and uses an HTTP API to get capture state and strip previews. The Pi keeps the original captures on disk. The phone requests a fresh preview when the capture revision changes, so the capture loop and the editing UI can run independently. The demo does not need a router, cloud service, or internet connection.
+
+### Filters, export, and recovery
+
+After the fourth frame, the app uses Core Image to preview Warm, Cool, Faded, or B&W, with controls for warmth, tint, grain, fade, contrast, and saturation. On submit, it renders the selected look into a 600 × 1800 JPEG and writes it through PhotoKit. The Pi keeps the archived strip if the phone disconnects. On reconnect the app can fetch it again, using a local save journal to link archive IDs to Photos assets and reduce duplicate saves after an interruption.
+
+These strips came from the prototype. The early desk shots and later kitchen shots capture the kind of casual, imperfect photos I wanted it to make.
 
 ![An early four-photo strip from testing PocketBooth at my desk](images/pocketbooth-strip-desk.jpg)
 
 ![A later PocketBooth strip from testing around the kitchen](images/pocketbooth-strip-kitchen.jpg)
 
-## Before my brother's wedding
+## What is next
 
-The goal is to make a pocket-sized version with a flash and printing through the Imation printer before my brother's wedding. The current enclosure is the first pass, and flash and printer integration are still next steps. For now, v1 gives me something tangible to test while I work out the smaller packaging and print workflow.
+I originally set out to make a pocket-sized version for my brother’s wedding. The next hardware work is to shrink the enclosure, add a flash, and test a print workflow with the Imation printer. The current build saves digital strips to Photos; the flash and automatic printing aren’t part of v1.
       `,
       sortOrder: 1
     },
