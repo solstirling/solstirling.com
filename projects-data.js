@@ -6,89 +6,43 @@
       status: 'testing',
       statusColor: 'yellow',
       date: '2026-06-13',
-      cardMarkdown:
-        'A road-data project that pairs a dashboard-mounted IMU with iPhone GPS and video. RevA is nearing the end of PCB layout, and I’m testing an on-device comparison model against labeled road data.',
+      updatedDate: '2026-11-08',
+      cardMarkdown: 'A dashboard-mounted IMU and an iPhone for detecting and mapping potholes on everyday drives.',
+      introMarkdown: 'If you live in San Diego, you know how bad the potholes have gotten. LiDAR is expensive, and I already know how to work with IMUs, so I’m building Potluck around a simpler idea: put motion sensors in a fleet of cars and collect road data while people drive.',
       mediaType: 'image',
       mediaSrc: 'images/potluck-reva-3d-screenshot-2026-11-08.png',
       mediaAlt: 'KiCad 3D view of the in-progress Potluck RevA PCB with the ESP32-C3, IMU, and USB-C connector',
       bodyMarkdown: `
-Potluck is a work-in-progress system for detecting and mapping potholes during ordinary drives. The current prototype pairs a BNO085 inertial sensor and XIAO ESP32S3 with an iPhone that records GPS, forward-facing video, and motion data for review after the drive.
+## Current state
 
-## Current state: testing
+- The BNO085 and XIAO ESP32-S3 prototype is collecting road data. The first RevA schematic cleanup is done, and routing is nearly finished. Traces, the logo, board text, and final checks are still in progress. The DigiKey cart is ready; RevA hasn’t been fabricated yet.
+- **October 2, 2026 · Mira Mesa:** 90 recordings, four continuous model runs, and a saved calibration. V2 trained on 41 usable labeled clips from the earlier export: 17 pothole and 24 non-pothole.
 
-The current focus is collecting data I can actually check. The phone records video, GPS, IMU data, and detector output together. After a drive, a laptop reviewer plays the video alongside the graph and route so I can compare a spike with the road feature that caused it. The detector still needs repeatable field tests and tuning for false positives and missed events.
+![Potluck RevA PCB layout in KiCad](images/potluck-reva-layout-screenshot-2026-11-08.png)
 
-## November 8, 2026 · RevA PCB update
-
-I fixed the issues from the first schematic review and have most of the RevA layout in place. The board puts a BNO086 near the center, with an ESP32-C3-MINI-1 module, USB-C, a 3.3 V regulator, and accessible test points. The screenshots above and below show the current KiCad 3D view and PCB layout.
-
-I’m finishing the remaining traces and still need to add the Potluck logo and board text to the silkscreen. The DigiKey parts cart is complete and ready to order. I’ll run the final layout checks before sending the board out; RevA hasn’t been fabricated or tested yet. The road-test hardware is still the BNO085 and XIAO prototype.
-
-![KiCad PCB Editor screenshot of the Potluck RevA layout with partially routed traces](images/potluck-reva-layout-screenshot-2026-11-08.png)
-
-### RevA schematic · November 8, 2026
-
-![Latest saved Potluck RevA schematic showing the BNO086 IMU, ESP32-C3, USB-C input, and 3.3 V regulator](images/potluck-reva-schematic-2026-11-08.png)
+![Potluck RevA schematic, November 8, 2026](images/potluck-reva-schematic-2026-11-08.png)
 
 [Open the full-size schematic](images/potluck-reva-schematic-2026-11-08.png)
 
-## October 2, 2026 · Mira Mesa training drive
-
-We drove in Mira Mesa to collect real examples for the pothole classifier, including normal driving and other disturbances that can look like potholes in the acceleration trace. The October 2 phone export contains **90 recordings, four continuous model runs, and a saved sensor calibration**. The recordings include timestamped XYZ and vertical acceleration, GPS fixes, and manual labels or model-review flags. The newer export has 20 more recordings than the earlier training snapshot.
-
-After filtering the earlier snapshot for usable human-labeled windows, **41 recordings went into v2: 17 pothole and 24 non-pothole**. Non-pothole examples include ordinary driving, freeway driving, curbs, and dips. I kept unreviewed predictions out of the training labels.
-
-## November 8, 2026 · Jev-like comparison model
-
-We now run the v2 comparison model on the iPhone. It scores consecutive 15-second windows using a regularized logistic regression over four features: vertical RMS, minimum and maximum vertical acceleration, and the absolute peak after low-pass filtering. GPS gives me context when I review a window; it does not feed the classifier. The model flags the window for review, so I can compare alerts and misses against human labels without guessing the exact impact time.
-
-On the 41-clip development set, archived v1 flagged **2 of 17** pothole windows and falsely flagged **1 of 24** negatives. In location-group validation, v2 found **12 of 17**, with **6 of 24** false alerts. Catching more potholes came with more false alarms. These are development results; the next check is an independent drive on unfamiliar roads.
-
-![Live dashboard used to inspect the IMU signal and orientation during development](images/potluck-testing-dashboard.gif)
-
-## From breadboard to road test
-
-The close-up below is the first version of the hardware. It used an older IMU that would not produce reliable data, even after I tried step-up conversion. I replaced that sensor and rebuilt the sensing stack around a BNO085, which is the version now being tested.
-
-![First hardware revision with the original IMU that failed even after step-up attempts](images/potluck-02-breadboard-closeup.jpg)
-
-![The breadboard prototype mounted on the dashboard for an early road test](images/potluck-03-dashboard-road-test.jpg)
-
-The current electronics use a Seeed Studio XIAO ESP32S3 and BNO085 IMU. The sensor reads linear acceleration and rotation at 100 Hz, compensates for vehicle orientation, filters ordinary vibration, and looks for the drop-and-rebound pattern of a pothole.
-
-## Building the testing loop
-
-I started with a desktop logger so I could see the raw motion signal inside the car and iterate on the detector. The newer workflow moves detailed labeling to the laptop after the drive. I can mark potholes, drain covers, dips, and speed bumps, or label stretches of smooth, medium, and rough road. Timestamp-based playback keeps the video and motion data together, with a manual correction when the alignment needs adjustment.
-
-The field setup now uses a more secure printed enclosure and a rigid dashboard mount. Mounting matters because a loose sensor can create motion that looks like a road impact.
-
-![Enclosed Potluck sensor mounted for field testing](images/potluck-05-enclosed-sensor.jpg)
-
-## From an impact to a map
-
-The phone handles GPS, background recording, session storage, and map rendering. The board handles detection and writes every event to LittleFS flash. If Bluetooth drops, the app requests the missed events after reconnecting and deduplicates them using the device and event IDs.
-
-The route view combines a provisional road-condition score with individual impact markers. The shallow, medium, and deep labels in the earlier map below describe impact severity, not literal pothole depth. The newer reviewer uses a provisional Potluck Impact Index alongside the motion measurements. Both need calibration across vehicles, speeds, tire pressures, and mounting positions.
-
-![Potluck iPhone route map showing detected deep impacts during a test drive](images/potluck-06-route-map.jpg)
-
-## Reviewing the evidence
-
-A saved run contains the video, motion and GPS data, and a sync manifest. The reviewer lets me export labels alongside that run so I can keep the observations separate from the automatic detector output. It also has an evidence-image and post-draft workflow for human-confirmed potholes, with a final manual review before publishing. That workflow is part of the beta; it does not make the detector a verified depth sensor.
-
 ## Technical details
 
-- BNO085 linear acceleration and rotation sampled at 100 Hz
-- Orientation compensation, adaptive thresholds, and drop/rebound detection on the ESP32S3
-- Custom Bluetooth Low Energy protocol with a 50 Hz binary IMU stream during active tests
-- LittleFS JSONL backup and replay after disconnects
-- Native iOS app built with SwiftUI, SwiftData, Core Bluetooth, Core Location, and MapKit
-- Synchronized video, JSONL motion/GPS data, and a session manifest
-- Laptop video, graph, and map review with portable label exports
+- The sensor logs motion; the iPhone records GPS and video. The review tool lines up the trace, map, and footage so I can check what caused each bump.
+- RevA replaces the breakout wiring with a BNO086, ESP32-C3-MINI-1, USB-C, and a 3.3 V regulator on one board.
+- The Jev-like comparison model runs on the iPhone. It uses logistic regression on four vertical acceleration features per 15-second window. In development validation, v2 flagged 12 of 17 pothole windows and 6 of 24 non-pothole windows. It still needs an independent road test.
 
-## What is next
+![First sensor prototype on a breadboard](images/potluck-02-breadboard-closeup.jpg)
 
-Next I’ll finish routing, add the silkscreen, and check the board before ordering. Once the first boards are assembled, I’ll verify power, USB flashing, and IMU readings before revising the enclosure. On the software side, I want an independent comparison drive, more repeatable labels across vehicles, and a reliable TestFlight install path.
+![Early dashboard road test](images/potluck-03-dashboard-road-test.jpg)
+
+![Enclosed road-test sensor](images/potluck-05-enclosed-sensor.jpg)
+
+![My very first test: I labeled every detected bump as a pothole. The “deep” markers are bump labels, not measured pothole depths.](images/potluck-06-route-map.jpg)
+
+## Goals
+
+- Build a fleet of Potluck testers who log data on their everyday drives.
+- Set up a Potluck account that automatically posts confirmed pothole reports, with the impact data and precise GPS location of each pothole.
+- Build a community around those reports and get residents and local government involved in fixing the roads.
       `,
       sortOrder: 0
     },
@@ -98,43 +52,34 @@ Next I’ll finish routing, add the silkscreen, and check the board before order
       status: 'v1 prototype',
       statusColor: 'yellow',
       date: '2026-09-20',
-      cardMarkdown:
-        'A 1–2 day photo booth prototype: a Raspberry Pi captures four frames from a USB camera, and a native iPhone app edits and saves the strip over local Wi-Fi.',
+      updatedDate: '2026-11-08',
+      hideMediaCaptions: true,
+      cardMarkdown: 'A portable photo booth that captures four frames and sends a photo strip to an iPhone.',
+      introMarkdown: 'I built the first PocketBooth in a couple of days to make a handheld camera with the two-button simplicity of a photo booth. It takes four photos, turns them into a strip, and saves it to my phone.',
       mediaType: 'image',
       mediaSrc: 'images/pocketbooth-holding.jpg',
       mediaAlt: 'Holding the first PocketBooth camera in its white 3D-printed enclosure',
       bodyMarkdown: `
-I made PocketBooth because I wanted to build something for fun. This was an overnight, hands-on project, with about 1–2 days spent getting a v1 together. The idea was simple: make a camera that feels like a tiny photo booth and turns a few moments into a four-photo strip.
+## Technical details
 
-## November 8, 2026 · Technical writeup revision
+- A Raspberry Pi 3B runs an OpenCV capture service for the USB camera. The white GPIO button captures a frame; the red button submits the strip. The hardware sits in a 3D-printed enclosure.
+- The Pi hosts its own Wi-Fi network. A SwiftUI app connects directly, previews filters with Core Image, and saves a 600 × 1800 JPEG to Photos. The Pi keeps submitted strips so the phone can retry after a disconnect.
 
-### Camera, controls, and enclosure
-
-I built v1 around a Raspberry Pi 3B, a USB camera, two momentary buttons, and a 3D-printed enclosure. The Pi runs the capture service under systemd. It opens the camera through OpenCV and Linux V4L2, requests 1280 × 720 MJPEG at 30 fps, and keeps the latest frame available for the shutter. The camera and driver negotiate the actual frame rate.
-
-The white button is wired to GPIO17 and captures the next frame, up to four per strip. The red button is wired to GPIO27 and archives the current strip before starting another. Both switches pull their input to ground on press. Keeping the controls on the Pi makes the camera usable without tapping the phone for each shot.
+## Photos
 
 ![PocketBooth enclosure assembly in CAD](images/pocketbooth-assembly.png)
 
-![Inside the first enclosure, with the wiring and red and white buttons exposed](images/pocketbooth-inside.jpg)
+![PocketBooth enclosure interior and wiring](images/pocketbooth-inside.jpg)
 
-### Local Wi-Fi and the iPhone app
+![Four-frame PocketBooth strip from a desk test](images/pocketbooth-strip-desk.jpg)
 
-The Pi runs its own Wi-Fi access point. The SwiftUI app joins that local camera network, pairs with a camera key stored in the iOS Keychain, and uses an HTTP API to get capture state and strip previews. The Pi keeps the original captures on disk. The phone requests a fresh preview when the capture revision changes, so the capture loop and the editing UI can run independently. The demo does not need a router, cloud service, or internet connection.
+![Four-frame PocketBooth strip from a kitchen test](images/pocketbooth-strip-kitchen.jpg)
 
-### Filters, export, and recovery
+## Goals
 
-After the fourth frame, the app uses Core Image to preview Warm, Cool, Faded, or B&W, with controls for warmth, tint, grain, fade, contrast, and saturation. On submit, it renders the selected look into a 600 × 1800 JPEG and writes it through PhotoKit. The Pi keeps the archived strip if the phone disconnects. On reconnect the app can fetch it again, using a local save journal to link archive IDs to Photos assets and reduce duplicate saves after an interruption.
-
-These strips came from the prototype. The early desk shots and later kitchen shots capture the kind of casual, imperfect photos I wanted it to make.
-
-![An early four-photo strip from testing PocketBooth at my desk](images/pocketbooth-strip-desk.jpg)
-
-![A later PocketBooth strip from testing around the kitchen](images/pocketbooth-strip-kitchen.jpg)
-
-## What is next
-
-I originally set out to make a pocket-sized version for my brother’s wedding. The next hardware work is to shrink the enclosure, add a flash, and test a print workflow with the Imation printer. The current build saves digital strips to Photos; the flash and automatic printing aren’t part of v1.
+- Make the enclosure pocket-sized.
+- Add a flash.
+- Test printing through the Imation printer.
       `,
       sortOrder: 1
     },
@@ -305,7 +250,7 @@ All of the different iterations of my easy capstan pivot. I wanted to pursue thi
     return html;
   }
 
-  function renderMarkdown(markdown) {
+  function renderMarkdown(markdown, { showCaptions = true } = {}) {
     const source = String(markdown || '').trim();
     if (!source) return '';
 
@@ -322,7 +267,7 @@ All of the different iterations of my easy capstan pivot. I wanted to pursue thi
           return `
             <figure class="markdown-media">
               <img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">
-              ${alt ? `<figcaption>${escapeHtml(alt)}</figcaption>` : ''}
+              ${showCaptions ? `<figcaption>${escapeHtml(alt)}</figcaption>` : ''}
             </figure>
           `;
         }

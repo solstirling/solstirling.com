@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Project | Sol Stirling Maker Portfolio</title>
-  <script src="projects-data.js?v=20261108-3"></script>
+  <script src="projects-data.js?v=20261108-4"></script>
   <link rel="stylesheet" href="site.css?v=20261006-1">
 </head>
 <body>
@@ -42,13 +42,13 @@
       content.dataset.project = project.id;
       content.innerHTML = `
         <div class="project-heading">
-          <p class="status-line">${portfolio.escapeHtml(project.status || 'project')}${project.date ? ` / ${portfolio.escapeHtml(portfolio.formatProjectDate(project.date, { includeDay: true }))}` : ''}</p>
+          <p class="status-line">${portfolio.escapeHtml(project.status || 'project')}${project.date ? ` / ${portfolio.escapeHtml(portfolio.formatProjectDate(project.date, { includeDay: true }))}` : ''}${project.updatedDate ? ` / updated ${portfolio.escapeHtml(portfolio.formatProjectDate(project.updatedDate, { includeDay: true }))}` : ''}</p>
           <h1 class="project-title">${portfolio.escapeHtml(project.title)}</h1>
-          <div class="project-lede markdown-copy">${portfolio.renderMarkdown(project.cardMarkdown)}</div>
+          <div class="project-lede markdown-copy">${portfolio.renderMarkdown(project.introMarkdown || project.cardMarkdown)}</div>
           ${externalAction}
         </div>
         ${heroMedia}
-        <div class="content-stack markdown-copy">${portfolio.renderMarkdown(project.bodyMarkdown)}</div>
+        <div class="content-stack markdown-copy">${portfolio.renderMarkdown(project.bodyMarkdown, { showCaptions: !project.hideMediaCaptions })}</div>
       `;
       document.title = `${project.title} | Sol Stirling Maker Portfolio`;
     }
