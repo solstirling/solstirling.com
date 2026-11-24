@@ -6,19 +6,21 @@
       status: 'testing',
       statusColor: 'yellow',
       date: '2026-06-13',
-      updatedDate: '2026-11-08',
+      updatedDate: '2026-11-24',
       cardMarkdown: 'A dashboard-mounted IMU and an iPhone for detecting and mapping potholes on everyday drives.',
       introMarkdown: 'If you live in San Diego, you know how bad the potholes have gotten. LiDAR is expensive, and I already know how to work with IMUs, so I’m building Potluck around a simpler idea: put motion sensors in a fleet of cars and collect road data while people drive.',
       mediaType: 'image',
-      mediaSrc: 'images/potluck-reva-3d-screenshot-2026-11-08.png',
-      mediaAlt: 'KiCad 3D view of the in-progress Potluck RevA PCB with the ESP32-C3, IMU, and USB-C connector',
+      mediaSrc: 'images/potluck-reva-v001-angle.png',
+      mediaAlt: 'KiCad render of Potluck RevA v0.0.1 with black solder mask and a white S logo',
       bodyMarkdown: `
 ## Current state
 
-- The BNO085 and XIAO ESP32-S3 prototype is collecting road data. The first RevA schematic cleanup is done, and routing is nearly finished. Traces, the logo, board text, and final checks are still in progress. The DigiKey cart is ready; RevA hasn’t been fabricated yet.
+- The BNO085 and XIAO ESP32-S3 prototype is collecting road data. The first RevA schematic cleanup is done, and routing is nearly finished. The front now carries the S logo and the Potluck Pothole Detector v0.0.1 label. I’m finishing the USB-C routing and checking the board for fabrication. The DigiKey cart is ready, and RevA hasn’t been fabricated yet.
 - **October 2, 2026 · Mira Mesa:** 90 recordings, four continuous model runs, and a saved calibration. V2 trained on 41 usable labeled clips from the earlier export: 17 pothole and 24 non-pothole.
 
-![Potluck RevA PCB layout in KiCad](images/potluck-reva-layout-screenshot-2026-11-08.png)
+![Top view of the Potluck RevA v0.0.1 board with the new logo and revision label](images/potluck-reva-v001-top.png)
+
+![Potluck RevA PCB layout in KiCad, November 8, 2026](images/potluck-reva-layout-screenshot-2026-11-08.png)
 
 ![Potluck RevA schematic, November 8, 2026](images/potluck-reva-schematic-2026-11-08.png)
 
@@ -45,43 +47,6 @@
 - Build a community around those reports and get residents and local government involved in fixing the roads.
       `,
       sortOrder: 0
-    },
-    {
-      id: 'pocketbooth',
-      title: 'PocketBooth',
-      status: 'v1 prototype',
-      statusColor: 'yellow',
-      date: '2026-09-20',
-      updatedDate: '2026-11-08',
-      hideMediaCaptions: true,
-      cardMarkdown: 'A portable photo booth that captures four frames and sends a photo strip to an iPhone.',
-      introMarkdown: 'I built the first PocketBooth in a couple of days to make a handheld camera with the two-button simplicity of a photo booth. It takes four photos, turns them into a strip, and saves it to my phone.',
-      mediaType: 'image',
-      mediaSrc: 'images/pocketbooth-holding.jpg',
-      mediaAlt: 'Holding the first PocketBooth camera in its white 3D-printed enclosure',
-      bodyMarkdown: `
-## Technical details
-
-- A Raspberry Pi 3B runs an OpenCV capture service for the USB camera. The white GPIO button captures a frame; the red button submits the strip. The hardware sits in a 3D-printed enclosure.
-- The Pi hosts its own Wi-Fi network. A SwiftUI app connects directly, previews filters with Core Image, and saves a 600 × 1800 JPEG to Photos. The Pi keeps submitted strips so the phone can retry after a disconnect.
-
-## Photos
-
-![PocketBooth enclosure assembly in CAD](images/pocketbooth-assembly.png)
-
-![PocketBooth enclosure interior and wiring](images/pocketbooth-inside.jpg)
-
-![Four-frame PocketBooth strip from a desk test](images/pocketbooth-strip-desk.jpg)
-
-![Four-frame PocketBooth strip from a kitchen test](images/pocketbooth-strip-kitchen.jpg)
-
-## Goals
-
-- Make the enclosure pocket-sized.
-- Add a flash.
-- Test printing through the Imation printer.
-      `,
-      sortOrder: 1
     },
     {
       id: 'overdrive2026',
