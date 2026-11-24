@@ -2,7 +2,7 @@
   const defaultProjects = [
     {
       id: 'potluck',
-      title: 'Potluck',
+      title: 'Acceleration Based Pothole Detection',
       status: 'testing',
       statusColor: 'yellow',
       date: '2026-06-13',
@@ -10,15 +10,15 @@
       cardMarkdown: 'A dashboard-mounted IMU and an iPhone for detecting and mapping potholes on everyday drives.',
       introMarkdown: 'If you live in San Diego, you know how bad the potholes have gotten. LiDAR is expensive, and I already know how to work with IMUs, so I’m building Potluck around a simpler idea: put motion sensors in a fleet of cars and collect road data while people drive.',
       mediaType: 'image',
-      mediaSrc: 'images/potluck-reva-v001-angle.png',
+      mediaSrc: 'images/potluck-abpd-angle.png',
       mediaAlt: 'KiCad render of Potluck RevA v0.0.1 with black solder mask and a white S logo',
       bodyMarkdown: `
 ## Current state
 
-- The BNO085 and XIAO ESP32-S3 prototype is collecting road data. The first RevA schematic cleanup is done, and routing is nearly finished. The front now carries the S logo and the Potluck Pothole Detector v0.0.1 label. I’m finishing the USB-C routing and checking the board for fabrication. The DigiKey cart is ready, and RevA hasn’t been fabricated yet.
+- The BNO085 and XIAO ESP32-S3 prototype is collecting road data. The first RevA schematic cleanup is done, and routing is nearly finished. The front now carries the S logo and the ABPD v0.0.1 label. I’m finishing the USB-C routing and checking the board for fabrication. The DigiKey cart is ready, and RevA hasn’t been fabricated yet.
 - **October 2, 2026 · Mira Mesa:** 90 recordings, four continuous model runs, and a saved calibration. V2 trained on 41 usable labeled clips from the earlier export: 17 pothole and 24 non-pothole.
 
-![Top view of the Potluck RevA v0.0.1 board with the new logo and revision label](images/potluck-reva-v001-top.png)
+![Top view of the Potluck RevA v0.0.1 board with the new logo and revision label](images/potluck-abpd-top.png)
 
 ![Potluck RevA PCB layout in KiCad, November 8, 2026](images/potluck-reva-layout-screenshot-2026-11-08.png)
 
