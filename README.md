@@ -4,7 +4,9 @@ Sol Stirling's static project portfolio. GitHub Pages publishes `main` from this
 
 ## Edit and preview
 
-- Project cards and articles: `projects-data.js`.
+- Open [Portfolio Studio](https://solstirling.com/editor.html) to edit project covers, titles and article blocks. Drafts stay in the current browser. **Download draft** saves a portable backup.
+- To publish from Studio, use a fine-grained GitHub token limited to this repository with **Contents: Read and write**. Studio sends the token directly to GitHub and never saves it. GitHub Pages updates after the commit.
+- Project cards and articles live in `projects.json`. The shared Markdown renderer is in `projects-data.js`.
 - Homepage: `index.html`; project template: `project.html`; styles: `site.css`.
 - Web-ready media: `images/`. Keep originals outside the site; remove photo location metadata before publishing.
 - Preview: `python3 -m http.server 4173 --bind 127.0.0.1`, then open http://127.0.0.1:4173.
@@ -17,7 +19,7 @@ Every update must be a Git commit pushed to GitHub. Do not force-push or replace
 
 1. Check `git status` and `git pull --ff-only` before starting; preserve unrelated local changes.
 2. Make changes and check the affected pages and images on desktop and mobile.
-3. Run `node --check projects-data.js` and `git diff --check`.
+3. Run `node --check projects-data.js`, `node --check editor.js`, and `git diff --check`.
 4. Stage only intended source and media files, then commit with a descriptive message.
 5. Push the commit with `git push origin main` when ready to publish.
 6. Check the GitHub Pages build and verify the live pages after deployment.

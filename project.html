@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Project | Sol Stirling Maker Portfolio</title>
-  <script src="projects-data.js?v=20261124-2"></script>
+  <script src="projects-data.js?v=20261124-3"></script>
   <link rel="stylesheet" href="site.css?v=20261006-1">
 </head>
 <body>
@@ -19,7 +19,7 @@
     <article id="project-content" class="project-detail"></article>
   </main>
 
-  <script>
+  <script type="module">
     const portfolio = window.PortfolioProjects || {};
     const content = document.getElementById('project-content');
 
@@ -27,16 +27,16 @@
       if (project.hideHeroMedia || !project.mediaSrc) return '';
 
       if (project.mediaType === 'video') {
-        return `<video class="project-hero-media" src="${portfolio.escapeHtml(project.mediaSrc)}" controls playsinline preload="metadata"></video>`;
+        return `<video class="project-hero-media" src="${portfolio.escapeHtml(portfolio.sanitizeUrl(project.mediaSrc))}" controls playsinline preload="metadata"></video>`;
       }
 
-      return `<img class="project-hero-media" src="${portfolio.escapeHtml(project.mediaSrc)}" alt="${portfolio.escapeHtml(project.mediaAlt || project.title)}">`;
+      return `<img class="project-hero-media" src="${portfolio.escapeHtml(portfolio.sanitizeUrl(project.mediaSrc))}" alt="${portfolio.escapeHtml(project.mediaAlt || project.title)}">`;
     }
 
     function renderProject(project) {
       const heroMedia = renderHeroMedia(project);
       const externalAction = project.externalLink
-        ? `<a class="project-action" href="${portfolio.escapeHtml(project.externalLink)}" target="_blank" rel="noopener noreferrer">open live project</a>`
+        ? `<a class="project-action" href="${portfolio.escapeHtml(portfolio.sanitizeUrl(project.externalLink))}" target="_blank" rel="noopener noreferrer">open live project</a>`
         : '';
 
       content.dataset.project = project.id;
@@ -58,14 +58,15 @@
     }
 
     const slug = new URLSearchParams(window.location.search).get('project');
-    const projects = portfolio.projects && Array.isArray(portfolio.projects) ? portfolio.projects : [];
     const resolvedSlug = ['diffy', 'capstan'].includes(slug) ? 'misc-projects' : slug;
-    const project = projects.find((item) => item.id === resolvedSlug);
-
-    if (project) {
-      renderProject(project);
-    } else {
+    try {
+      const projects = await portfolio.loadProjects();
+      const project = projects.find(item => item.id === resolvedSlug);
+      if (project) renderProject(project);
+      else renderError();
+    } catch (error) {
       renderError();
+      console.error(error);
     }
   </script>
 </body>

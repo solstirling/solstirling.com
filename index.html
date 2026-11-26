@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sol Stirling Maker Portfolio</title>
-  <script src="projects-data.js?v=20261124-2"></script>
+  <script src="projects-data.js?v=20261124-3"></script>
   <link rel="stylesheet" href="site.css?v=20261006-1">
 </head>
 <body>
@@ -23,7 +23,7 @@
     </section>
   </main>
 
-  <script>
+  <script type="module">
     const portfolio = window.PortfolioProjects || {};
     const projectGrid = document.getElementById('projects-grid');
 
@@ -36,9 +36,9 @@
       projectGrid.innerHTML = projects
         .map((project, index) => {
           const label = String(index + 1).padStart(2, '0');
-          const media = project.mediaType === 'video'
-            ? `<video class="project-media" src="${portfolio.escapeHtml(project.mediaSrc)}" muted playsinline preload="metadata"></video>`
-            : `<img class="project-media" src="${portfolio.escapeHtml(project.mediaSrc)}" alt="${portfolio.escapeHtml(project.mediaAlt || project.title)}">`;
+          const media = !project.mediaSrc ? '' : project.mediaType === 'video'
+            ? `<video class="project-media" src="${portfolio.escapeHtml(portfolio.sanitizeUrl(project.mediaSrc))}" muted playsinline preload="metadata"></video>`
+            : `<img class="project-media" src="${portfolio.escapeHtml(portfolio.sanitizeUrl(project.mediaSrc))}" alt="${portfolio.escapeHtml(project.mediaAlt || project.title)}">`;
 
           return `
             <a class="project-card" data-project="${portfolio.escapeHtml(project.id)}" href="${portfolio.escapeHtml(portfolio.projectCardHref(project))}">
@@ -59,8 +59,12 @@
         .join('');
     }
 
-    const projectList = portfolio.projects && Array.isArray(portfolio.projects) ? portfolio.projects : [];
-    renderProjectCards(projectList);
+    try {
+      renderProjectCards(portfolio.sortProjects(await portfolio.loadProjects()));
+    } catch (error) {
+      renderProjectCards([]);
+      console.error(error);
+    }
   </script>
 </body>
 </html>

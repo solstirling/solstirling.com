@@ -1,0 +1,51 @@
+:root{color-scheme:light;--ink:#23272e;--sub:#525a65;--line:#d8dde5;--paper:#fff;--bg:#f2f4f7;--brand:#473593;font-family:ui-sans-serif,system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+a{color:var(--brand)}
+button,.button{font:inherit;font-weight:600;cursor:pointer;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:8px 13px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-align:center}
+button:hover,.button:hover{background:#ece9fa}
+:focus-visible{outline:3px solid #7458cb;outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.primary{background:var(--brand);color:white;border-color:var(--brand)}
+.primary:hover{background:#372772}
+.quiet{background:transparent}
+.bar{background:var(--paper);min-height:68px;border-bottom:1px solid var(--line);padding:12px clamp(14px,4vw,54px);display:flex;justify-content:space-between;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;color:var(--ink);text-decoration:none}
+.brand img{width:36px;height:36px;background:#22232c;border-radius:8px;object-fit:contain}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.workspace{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 68px)}
+.sidebar{padding:24px 16px;border-right:1px solid var(--line)}
+.side-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.side-heading h2{font-size:1rem;margin:0}
+#projects{display:grid;gap:6px}
+#projects button{text-align:left;justify-content:flex-start;font-weight:500}
+#projects [aria-current=true]{background:#e8e2fb;border-color:#bbb0df;color:#39277c;font-weight:700}
+.draft-tools{display:grid;gap:8px;margin-top:28px}
+.paper{width:min(100% - 32px,840px);margin:24px auto;padding:clamp(16px,4vw,48px);background:var(--paper);border:1px solid var(--line);border-radius:16px;min-width:0;align-self:start}
+.status{color:var(--sub);font-size:.9rem;margin:0 0 20px}
+.field{display:grid;gap:4px;margin-bottom:14px}
+.field span,dialog label{font-size:.9rem;font-weight:650}
+input,textarea,select{min-width:0;width:100%;font:inherit;color:inherit;border:1px solid var(--line);border-radius:8px;background:white;padding:9px 10px}
+textarea{resize:vertical;display:block}
+.title-input{font-weight:750;font-size:clamp(1.45rem,4vw,2.4rem);line-height:1.15}
+details{padding:10px 0;border-block:1px solid var(--line);margin:18px 0}
+summary{cursor:pointer;font-weight:650;padding:9px 0}
+.properties{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;padding-top:8px}
+.cover{width:100%;aspect-ratio:2/1;object-fit:contain;background:var(--bg);border-radius:8px;margin-bottom:8px}
+.section-heading{font-size:1.1rem;margin:22px 0 10px}
+.block{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px}
+.block-tools{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-bottom:7px}
+.block-type{color:var(--sub);font-size:.88rem;flex:1;min-width:75px}
+.block-tools button{padding:4px 9px}
+.block textarea{border-color:transparent;background:#f8f9fc}
+.block[data-type=heading] textarea{font-size:1.25rem;font-weight:700}
+.block[data-type=image] img,.preview img,.preview video{max-width:100%;max-height:500px;object-fit:contain;border-radius:8px;display:block;margin:0 auto}
+.preview figure{margin:1em 0}
+.preview figcaption{color:var(--sub);font-size:.9rem;margin-top:5px}
+.preview h1{font-size:clamp(1.6rem,5vw,2.5rem);line-height:1.15}
+.add-block{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+dialog{width:min(480px,calc(100% - 28px));border:1px solid var(--line);border-radius:14px;padding:24px;color:var(--ink)}
+dialog::backdrop{background:#20203888}
+dialog form{margin-top:16px}
+@media(max-width:700px){.workspace{display:block}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:12px 16px}#projects{display:flex;flex-wrap:wrap}.draft-tools{display:flex;flex-wrap:wrap;margin-top:12px}.bar{flex-wrap:wrap}.paper{margin:16px auto}.properties{grid-template-columns:1fr}}

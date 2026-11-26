@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Portfolio Studio | Sol Stirling</title>
+  <link rel="stylesheet" href="editor.css">
+  <script src="projects-data.js?v=20261124-3" defer></script>
+  <script src="editor.js" defer></script>
+</head>
+<body>
+  <header class="bar">
+    <a href="index.html" class="brand"><img src="images/logo.png" alt=""> Portfolio Studio</a>
+    <div class="actions">
+      <a class="button quiet" href="index.html">View site</a>
+      <button id="preview-toggle" type="button" aria-pressed="false" disabled>Preview</button>
+      <button class="primary" id="publish" type="button" disabled>Publish</button>
+    </div>
+  </header>
+  <main class="workspace">
+    <aside class="sidebar" aria-label="Projects">
+      <div class="side-heading"><h2>Projects</h2><button id="new-project" type="button" aria-label="Add a project" disabled>+</button></div>
+      <nav id="projects" aria-label="Choose a project"></nav>
+      <div class="draft-tools">
+        <button id="backup" type="button" disabled>Download draft</button>
+        <label class="button" for="restore">Import draft</label>
+        <button id="reset" type="button" disabled>Reload live content</button>
+        <input id="restore" type="file" accept=".json,application/json" hidden disabled>
+      </div>
+    </aside>
+    <section class="paper" aria-label="Project editor">
+      <p class="status" id="status" role="status">Loading portfolio…</p>
+      <div id="edit" hidden></div>
+      <article class="preview" id="preview" hidden></article>
+    </section>
+  </main>
+  <dialog id="publish-dialog">
+    <h2>Publish to your portfolio</h2>
+    <p>Use a GitHub fine-grained token for <strong>solstirling/solstirling.com</strong> with <strong>Contents: Read and write</strong>. This publishes the current draft to the live site.</p>
+    <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Create a repository token on GitHub</a>
+    <form id="publish-form">
+      <label>GitHub token<input id="token" type="password" required autocomplete="off" spellcheck="false"></label>
+      <p id="publish-status" role="status"></p>
+      <div class="actions"><button id="cancel-publish" type="button">Cancel</button><button class="primary" id="submit-publish" type="submit">Publish changes</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
